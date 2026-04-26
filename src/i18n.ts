@@ -1,0 +1,67 @@
+export const translations = {
+  zh: {
+    language: '语言',
+    layout: '布局',
+    style: '风格',
+    themeDefault: '默认风格',
+    themeLight: '明亮风格',
+    themeDark: '暗黑风格',
+    layoutVertical: '纵向排版',
+    layoutHorizontal: '横向排版',
+    profile: '个人信息',
+    settings: '设置',
+    logout: '退出登录',
+    allCategories: '所有',
+    addCategory: '新增顶级分类名称',
+    categoryName: '分类名称',
+    placeholderCategoryName: '请输入分类名称',
+    addSubCategory: '新增子分类名称',
+    addTag: '添加标签',
+    editMode: '编辑模式',
+    viewMode: '浏览模式',
+    renameCat: '修改分类名称',
+    emptyDesc: '暂无导航内容，请点击左上角的“浏览模式”切换至“编辑模式”进行添加。',
+    emptyCatDesc: '该分类下暂无内容。',
+    rootLevel: '顶级标签',
+    tagName: '标签名称',
+    tagUrl: '标签URL',
+    cancel: '取消',
+    confirm: '确认',
+  },
+  en: {
+    language: 'Language',
+    layout: 'Layout',
+    style: 'Style',
+    themeDefault: 'Default Theme',
+    themeLight: 'Light Theme',
+    themeDark: 'Dark Theme',
+    layoutVertical: 'Vertical Layout',
+    layoutHorizontal: 'Horizontal Layout',
+    profile: 'Profile',
+    settings: 'Settings',
+    logout: 'Logout',
+    allCategories: 'All',
+    addCategory: 'Add Category',
+    categoryName: 'Category Name',
+    placeholderCategoryName: 'Enter category name',
+    addSubCategory: 'Add Subcategory',
+    addTag: 'Add Tag',
+    editMode: 'Edit Mode',
+    viewMode: 'View Mode',
+    renameCat: 'Rename Category',
+    emptyDesc: 'No content yet, please click "View Mode" to switch to "Edit Mode" to add.',
+    emptyCatDesc: 'No content in this category.',
+    rootLevel: 'Root Tags',
+    tagName: 'Tag Name',
+    tagUrl: 'Tag URL',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+  }
+} as const;
+
+export type SupportedLang = keyof typeof translations;
+
+export function useTranslation(lang: string) {
+  const l = (translations[lang as SupportedLang] || translations.zh);
+  return (key: keyof typeof translations.zh) => l[key] || translations.zh[key];
+}
