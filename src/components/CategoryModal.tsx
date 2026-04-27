@@ -194,7 +194,7 @@ export function CategoryModal() {
   const [icon, setIcon] = useState('');
   const [iconColor, setIconColor] = useState('#3b82f6');
   const [textColor, setTextColor] = useState('#374151');
-  const [activeTab, setActiveTab] = useState('lucide');
+  const [activeTab, setActiveTab] = useState('iconify');
   const [searchQuery, setSearchQuery] = useState('');
 
   const isAdding = !!addingCategory;
@@ -207,10 +207,7 @@ export function CategoryModal() {
       setIconColor(editingCategory.icon_color || '#3b82f6');
       setTextColor(editingCategory.text_color || '#374151');
       if (editingCategory.icon) {
-        if (editingCategory.icon.startsWith('dicebear:')) setActiveTab('dicebear');
-        else if (editingCategory.icon.startsWith('openpeeps:')) setActiveTab('openpeeps');
-        else if (editingCategory.icon.startsWith('avataaars:')) setActiveTab('avataaars');
-        else if (editingCategory.icon.includes(':')) setActiveTab('iconify');
+        if (editingCategory.icon.includes(':')) setActiveTab('iconify');
         else setActiveTab('lucide');
       }
     } else if (addingCategory) {
@@ -218,7 +215,7 @@ export function CategoryModal() {
       setIcon('');
       setIconColor('#3b82f6');
       setTextColor('#374151');
-      setActiveTab('lucide');
+      setActiveTab('iconify');
     }
   }, [editingCategory, addingCategory]);
 
@@ -273,18 +270,6 @@ export function CategoryModal() {
     }
     if (icon.startsWith('<svg')) {
       return <div dangerouslySetInnerHTML={{ __html: icon }} className="w-8 h-8" />;
-    }
-    if (icon.startsWith('dicebear:')) {
-      const parts = icon.split(':');
-      return <img src={`https://api.dicebear.com/9.x/${parts[1]}/svg?seed=${parts[2]}`} alt="preview" className="w-8 h-8" />;
-    }
-    if (icon.startsWith('openpeeps:')) {
-      const parts = icon.split(':');
-      return <img src={`https://api.dicebear.com/9.x/open-peeps/svg?seed=${parts[1]}`} alt="preview" className="w-8 h-8" />;
-    }
-    if (icon.startsWith('avataaars:')) {
-      const parts = icon.split(':');
-      return <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${parts[1]}`} alt="preview" className="w-8 h-8" />;
     }
     if (icon.includes(':')) {
       const [prefix, name] = icon.split(':');
@@ -374,24 +359,19 @@ export function CategoryModal() {
               />
               <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="border border-gray-200 rounded">
                 <Tabs.List className="flex border-b border-gray-200 bg-gray-50">
-                  <Tabs.Trigger value="lucide" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
-                    Lucide
-                  </Tabs.Trigger>
                   <Tabs.Trigger value="iconify" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
                     Iconify
                   </Tabs.Trigger>
-                  <Tabs.Trigger value="dicebear" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
-                    DiceBear
-                  </Tabs.Trigger>
-                  <Tabs.Trigger value="openpeeps" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
-                    Open Peeps
-                  </Tabs.Trigger>
-                  <Tabs.Trigger value="avataaars" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
-                    Avataaars
+                  <Tabs.Trigger value="lucide" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    Lucide
                   </Tabs.Trigger>
                 </Tabs.List>
                 
                 <div className="p-3">
+                  <Tabs.Content value="iconify">
+                    <IconifySearch onSelect={setIcon} searchQuery={searchQuery} />
+                  </Tabs.Content>
+                  
                   <Tabs.Content value="lucide">
                     <div className="grid grid-cols-6 gap-2">
                       <button 
@@ -417,22 +397,6 @@ export function CategoryModal() {
                          )
                       })}
                     </div>
-                  </Tabs.Content>
-                  
-                  <Tabs.Content value="iconify">
-                    <IconifySearch onSelect={setIcon} searchQuery={searchQuery} />
-                  </Tabs.Content>
-                  
-                  <Tabs.Content value="dicebear">
-                    <DiceBearSelector onSelect={setIcon} searchQuery={searchQuery} />
-                  </Tabs.Content>
-                  
-                  <Tabs.Content value="openpeeps">
-                    <OpenPeepsSelector onSelect={setIcon} searchQuery={searchQuery} />
-                  </Tabs.Content>
-                  
-                  <Tabs.Content value="avataaars">
-                    <AvataaarsSelector onSelect={setIcon} searchQuery={searchQuery} />
                   </Tabs.Content>
                 </div>
               </Tabs.Root>
