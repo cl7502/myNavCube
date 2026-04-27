@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { useStore, Category } from '../store';
-import { ChevronRight, ChevronDown, Plus, MoreVertical, LayoutGrid, PanelLeftClose, PanelLeftOpen, ZoomIn, ZoomOut } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Trash2, MoreVertical, LayoutGrid, PanelLeftClose, PanelLeftOpen, ZoomIn, ZoomOut } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTranslation } from '../i18n';
 
 export function Sidebar() {
-  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, isEditMode, settings, setSettings, openAddCategory } = useStore();
+  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, settings, setSettings, openAddCategory } = useStore();
   const [width, setWidth] = useState(settings.sidebarWidth || 250);
   const [scale, setScale] = useState(settings.sidebarScale || 1);
   const isDraggingRef = useRef(false);
@@ -187,12 +187,34 @@ return (
 }
 
 function CategoryItem({ category, index, allCats, renderTree }: any) {
-  const { selectedCategoryId, setSelectedCategory, isEditMode, settings } = useStore();
+  const { selectedCategoryId, setSelectedCategory, settings, tags, categories, setCategories } = useStore();
   const [expanded, setExpanded] = useState(category.is_expanded);
   const t = useTranslation(settings.language);
+
+  const hasChildren = buildHasChildren(allCats, category.id);
+  const hasTags = tags.some((t: any) => t.category_id === category.id);
+  const canDelete = !hasChildren && !hasTags;
+
+  const handleDelete = async (e: any) => {
+    e.stopPropagation();
+    if (category.id === 'root') return;
+    if (!canDelete) {
+      alert('该分类下有子分类或标签，无法删除');
+      return;
+    }
+    if (!confirm('确定要删除这个分类吗？')) return;
+    try {
+      await import('../lib/api').then(({ api }) => api.delete(`/api/categories/${category.id}`));
+      const newCats = categories.filter((c: any) => c.id !== category.id);
+      setCategories(newCats);
+      if (selectedCategoryId === category.id) setSelectedCategory('root');
+    } catch (err) {
+      console.error('Failed to delete category', err);
+    }
+  };
   
 return (
-    <Draggable draggableId={`cat-${category.id}`} index={index} isDragDisabled={!isEditMode}>
+    <Draggable draggableId={`cat-${category.id}`} index={index}>
       {(provided) => {
         let IconComp: any = null;
         let isCustomSvg = false;
@@ -223,7 +245,7 @@ return (
         
         return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="flex flex-col mt-0.5 relative">
-          <Droppable droppableId={`cat-${category.id}`} type="TAG" isDropDisabled={!isEditMode}>
+           <Droppable droppableId={`cat-${category.id}`} type="TAG">
             {(dropProvided, dropSnapshot) => (
                <div 
                  ref={dropProvided.innerRef} 
@@ -252,19 +274,28 @@ onDoubleClick={() => {
                     <span className="truncate select-none" style={{ color: category.text_color || 'inherit' }}>{category.name}</span>
                   </div>
                  
-                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-<button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            useStore.getState().openAddCategory(category.id);
-                          }}
-                          onMouseDown={e => e.stopPropagation()}
-                          onTouchStart={e => e.stopPropagation()}
+                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0 gap-1">
+                       <button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           e.preventDefault();
+                           useStore.getState().openAddCategory(category.id);
+                         }}
+                         onMouseDown={e => e.stopPropagation()}
+                         onTouchStart={e => e.stopPropagation()}
                        >
                          <Plus size={12} />
-                      </button>
-                   </div>
+                       </button>
+                       {category.id !== 'root' && (
+                         <button type="button" className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50" 
+                           onClick={handleDelete}
+                           onMouseDown={e => e.stopPropagation()}
+                           onTouchStart={e => e.stopPropagation()}
+                         >
+                           <Trash2 size={12} />
+                         </button>
+                       )}
+                    </div>
                    {dropProvided.placeholder && <div className="hidden" style={{display:'none'}}>{dropProvided.placeholder}</div>}
               </div>
             )}

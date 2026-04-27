@@ -54,7 +54,6 @@ export default function App() {
     const { source, destination, draggableId, type, combine } = result;
     
     if (draggableId.startsWith('cat-')) {
-       if (!useStore.getState().isEditMode) return;
        const draggedId = draggableId.replace('cat-', '');
        if (combine) {
           const targetId = combine.draggableId.replace('cat-', '');
@@ -69,7 +68,6 @@ export default function App() {
           // Reordering not fully implemented for tree yet, just handle basic movement later
        }
     } else if (draggableId.startsWith('tag-')) {
-       if (!useStore.getState().isEditMode) return;
        const tagId = draggableId.replace('tag-', '');
        
        let targetCat = 'root';

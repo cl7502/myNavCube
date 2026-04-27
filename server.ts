@@ -72,23 +72,7 @@ CREATE TABLE IF NOT EXISTS tags (
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(category_id) REFERENCES categories(id)
   );
-
-  -- Migration: Add new columns if they don't exist
-  ALTER TABLE tags ADD COLUMN url_external TEXT NOT NULL DEFAULT '';
-  ALTER TABLE tags ADD COLUMN show_description INTEGER DEFAULT 0;
-  ALTER TABLE tags ADD COLUMN show_url INTEGER DEFAULT 0;
-  ALTER TABLE tags ADD COLUMN show_url_external INTEGER DEFAULT 0;
-  ALTER TABLE tags ADD COLUMN icon_color TEXT DEFAULT '#6b7280';
-  ALTER TABLE tags ADD COLUMN text_color TEXT DEFAULT '#374151';
-  ALTER TABLE tags ADD COLUMN title_font TEXT DEFAULT 'Inter';
-  ALTER TABLE tags ADD COLUMN title_color TEXT DEFAULT '#1f2937';
-  ALTER TABLE tags ADD COLUMN url_font TEXT DEFAULT 'Inter';
-  ALTER TABLE tags ADD COLUMN url_color TEXT DEFAULT '#6b7280';
-  ALTER TABLE tags ADD COLUMN url_external_font TEXT DEFAULT 'Inter';
-  ALTER TABLE tags ADD COLUMN url_external_color TEXT DEFAULT '#6b7280';
-  ALTER TABLE tags ADD COLUMN description_font TEXT DEFAULT 'Inter';
-  ALTER TABLE tags ADD COLUMN description_color TEXT DEFAULT '#6b7280';
-`);
+ `);
 
 // Middleware for Auth
 function authenticateToken(req: any, res: any, next: any) {

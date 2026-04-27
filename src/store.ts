@@ -80,24 +80,22 @@ interface AppState {
   settings: UserSettings;
   categories: Category[];
   tags: Tag[];
-  isEditMode: boolean;
   selectedCategoryId: string | null;
   isSidebarExpanded: boolean;
   promptState: PromptState | null;
   editingCategory: Category | null;
   editingTag: Tag | null;
   addingCategory: { parentId: string | null; name: string } | null;
-   
+    
   setUser: (user: User | null) => void;
   setSettings: (settings: Partial<UserSettings>) => void;
   setCategories: (categories: Category[]) => void;
   setTags: (tags: Tag[]) => void;
-  setEditMode: (mode: boolean) => void;
   setSelectedCategory: (id: string | null) => void;
   setSidebarExpanded: (expanded: boolean) => void;
   openPrompt: (title: string, fields: PromptState['fields'], onSubmit: (values: Record<string, string>) => void) => void;
   closePrompt: () => void;
-setEditingCategory: (cat: Category | null) => void;
+  setEditingCategory: (cat: Category | null) => void;
   setEditingTag: (tag: Tag | null) => void;
   openAddCategory: (parentId: string | null, name?: string) => void;
   closeAddCategory: () => void;
@@ -137,26 +135,24 @@ export const useStore = create<AppState>((set) => ({
   settings: defaultSettings,
   categories: [],
   tags: [],
-  isEditMode: true,
   selectedCategoryId: 'root',
   isSidebarExpanded: true,
   promptState: null,
   editingCategory: null,
   editingTag: null,
   addingCategory: null,
-   
+
   setUser: (user) => set({ user }),
   setSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
   setCategories: (categories) => set({ categories }),
   setTags: (tags) => set({ tags }),
-  setEditMode: (isEditMode) => set({ isEditMode }),
   setSelectedCategory: (selectedCategoryId) => set({ selectedCategoryId }),
   setSidebarExpanded: (isSidebarExpanded) => set({ isSidebarExpanded }),
   openPrompt: (title, fields, onSubmit) => set({ promptState: { isOpen: true, title, fields, onSubmit } }),
   closePrompt: () => set({ promptState: null }),
   setEditingCategory: (editingCategory) => set({ editingCategory }),
   setEditingTag: (editingTag) => set({ editingTag }),
-openAddCategory: (parentId, name = '') => set({ addingCategory: { parentId, name } }),
+  openAddCategory: (parentId, name = '') => set({ addingCategory: { parentId, name } }),
   closeAddCategory: () => set({ addingCategory: null }),
   addingTag: null,
   openAddTag: (categoryId) => set({ addingTag: { categoryId } }),
