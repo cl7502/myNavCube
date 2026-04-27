@@ -153,13 +153,20 @@ export function MainContent() {
   };
 
   return (
-    <section className={clsx("flex-1 flex flex-col overflow-hidden", settings.theme === 'dark' ? 'bg-gray-900' : 'bg-[#F9FAFB]')}>
-      <div className={clsx("h-10 border-b flex items-center px-4 justify-between shrink-0", settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300')}>
+<section className={clsx("flex-1 flex flex-col overflow-hidden", 
+      settings.theme === 'dark' ? 'bg-gray-900' : 
+      settings.theme === 'superhuman' ? 'bg-[#ffffff]' : 'bg-[#F9FAFB]')}>
+      <div className={clsx("h-10 border-b flex items-center px-4 justify-between shrink-0", 
+      settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 
+      settings.theme === 'superhuman' ? 'bg-white border-[#dcd7d3]' : 'bg-white border-gray-300')}>
         <div className="flex items-center gap-2">
           {isEditMode && (
             <div className="flex items-center gap-1 text-xs relative" ref={layoutRef}>
 <button 
-                    className={clsx("px-2 py-1 border rounded flex items-center gap-1", settings.theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50')}
+                    className={clsx("px-2 py-1 border rounded flex items-center gap-1", 
+                    settings.theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600' : 
+                    settings.theme === 'superhuman' ? 'bg-[#e9e5dd] border-[#dcd7d3] text-[#292827] hover:bg-[#dcd7d3]' :
+                    'bg-white border-gray-200 text-gray-600 hover:bg-gray-50')}
                     onClick={() => {
                        useStore.getState().openAddTag(selectedCategoryId || 'root');
                     }}
@@ -167,9 +174,12 @@ export function MainContent() {
                     <Plus size={12}/><span>{t('addTag')}</span>
                  </button>
                  <div className="h-4 w-px bg-gray-200 mx-0.5"></div>
-                 
+                  
 <button 
-                    className={clsx("px-2 py-1 border rounded flex items-center gap-1", settings.theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50')}
+                    className={clsx("px-2 py-1 border rounded flex items-center gap-1", 
+                    settings.theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600' : 
+                    settings.theme === 'superhuman' ? 'bg-[#e9e5dd] border-[#dcd7d3] text-[#292827] hover:bg-[#dcd7d3]' :
+                    'bg-white border-gray-200 text-gray-600 hover:bg-gray-50')}
                     onClick={() => { setLayoutPanelOpen(!layoutPanelOpen); setActivePanel(null); }}
                   >
                     <Settings size={12}/> 排版
@@ -212,9 +222,9 @@ export function MainContent() {
                </div>
           )}
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-gray-400">
-           <span className="bg-gray-100 px-2 py-0.5 rounded">拖拽排序已启用</span>
-           <span className="bg-gray-100 px-2 py-0.5 rounded">所见即所得</span>
+<div className="flex items-center gap-2 text-[10px]" style={{ color: settings.theme === 'superhuman' ? '#714cb6' : '#9ca3af' }}>
+           <span className="px-2 py-0.5 rounded" style={{ backgroundColor: settings.theme === 'superhuman' ? '#e9e5dd' : '#f3f4f6' }}>拖拽排序已启用</span>
+           <span className="px-2 py-0.5 rounded" style={{ backgroundColor: settings.theme === 'superhuman' ? '#e9e5dd' : '#f3f4f6' }}>所见即所得</span>
         </div>
       </div>
 
@@ -289,10 +299,12 @@ function HorizontalLayout() {
    const isEmptyRoot = rootTags.length === 0 && rootCats.length === 0;
 
    return (
-     <div className={clsx("w-full max-w-6xl mx-auto relative", settings.theme === 'dark' ? 'text-gray-300' : 'text-gray-600')}>
-       {isEmptyRoot && !isEditMode && (
-           <div className="flex-1 flex flex-col items-center justify-center text-sm text-gray-400 italic py-20 px-4 text-center">
-              <div className={clsx("p-4 rounded-full mb-4", settings.theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100')}><Globe size={32} className="text-gray-300" /></div>
+<div className={clsx("w-full max-w-6xl mx-auto relative", 
+        settings.theme === 'dark' ? 'text-gray-300' : 
+        settings.theme === 'superhuman' ? 'text-[#292827]' : 'text-gray-600')}>
+        {isEmptyRoot && !isEditMode && (
+            <div className="flex-1 flex flex-col items-center justify-center text-sm italic py-20 px-4 text-center" style={{ color: settings.theme === 'superhuman' ? '#714cb6' : '#9ca3af' }}>
+               <div className={clsx("p-4 rounded-full mb-4", settings.theme === 'dark' ? 'bg-gray-800' : settings.theme === 'superhuman' ? 'bg-[#e9e5dd]' : 'bg-gray-100')}><Globe size={32} style={{ color: settings.theme === 'superhuman' ? '#cbb7fb' : '#9ca3af' }} /></div>
               {t('emptyDesc')}
            </div>
        )}
@@ -495,28 +507,28 @@ function TagCard({ tag, isEditMode, layout, index, colorBlock, onEdit, ...rest }
           <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded" style={{ color: tag.icon_color || layout.iconColor || '#6b7280' }}>
             {renderTagIcon(tag, layout.iconSize || 16)}
           </div>
-          <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-            <div className="font-bold truncate leading-tight" style={{ fontSize: layout.textSize, color: tag.text_color || '#374151' }}>{tag.title}</div>
-            {tag.show_description && tag.description && <div className="truncate leading-tight" style={{ fontSize: layout.descSize, fontFamily: layout.descFont, color: layout.descColor }}>{tag.description}</div>}
-            {tag.show_url && tag.url && (
-              <div 
-                className="truncate leading-tight opacity-80 cursor-pointer hover:text-blue-600"
-                style={{ fontSize: layout.urlSize, fontFamily: layout.urlFont, color: layout.urlColor }}
-                onClick={(e) => { e.stopPropagation(); if(tag.url) window.open(tag.url.startsWith('http') ? tag.url : `https://${tag.url}`, '_blank'); }}
-              >
-                {tag.url.replace(/^https?:\/\//, '')}
-              </div>
-            )}
-            {tag.show_url_external && tag.url_external && (
-              <div 
-                className="truncate leading-tight opacity-80 cursor-pointer hover:text-blue-600 flex items-center gap-1"
-                style={{ fontSize: layout.urlSize, fontFamily: layout.urlFont, color: layout.urlColor }}
-                onClick={(e) => { e.stopPropagation(); window.open(tag.url_external!.startsWith('http') ? tag.url_external : `https://${tag.url_external}`, '_blank'); }}
-              >
-                <ExternalLink size={layout.urlSize} />{tag.url_external.replace(/^https?:\/\//, '')}
-              </div>
-            )}
-          </div>
+           <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+             <div className="font-bold truncate leading-tight" style={{ fontSize: layout.textSize, fontFamily: tag.title_font || 'Inter', color: tag.title_color || '#1f2937' }}>{tag.title}</div>
+             {tag.show_description && tag.description && <div className="truncate leading-tight" style={{ fontSize: layout.descSize, fontFamily: tag.description_font || 'Inter', color: tag.description_color || '#6b7280' }}>{tag.description}</div>}
+             {tag.show_url && tag.url && (
+               <div
+                 className="truncate leading-tight opacity-80 cursor-pointer hover:text-blue-600"
+                 style={{ fontSize: layout.urlSize, fontFamily: tag.url_font || 'Inter', color: tag.url_color || '#6b7280' }}
+                 onClick={(e) => { e.stopPropagation(); if(tag.url) window.open(tag.url.startsWith('http') ? tag.url : `https://${tag.url}`, '_blank'); }}
+               >
+                 {tag.url.replace(/^https?:\/\//, '')}
+               </div>
+             )}
+             {tag.show_url_external && tag.url_external && (
+               <div
+                 className="truncate leading-tight opacity-80 cursor-pointer hover:text-blue-600 flex items-center gap-1"
+                 style={{ fontSize: layout.urlSize, fontFamily: tag.url_external_font || 'Inter', color: tag.url_external_color || '#6b7280' }}
+                 onClick={(e) => { e.stopPropagation(); window.open(tag.url_external!.startsWith('http') ? tag.url_external : `https://${tag.url_external}`, '_blank'); }}
+               >
+                 <ExternalLink size={layout.urlSize} />{tag.url_external.replace(/^https?:\/\//, '')}
+               </div>
+             )}
+           </div>
         </div>
       )}
     </Draggable>

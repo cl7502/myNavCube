@@ -18,25 +18,55 @@ export function TopBar() {
     window.location.reload();
   };
 
+const getThemeColors = (theme: string) => {
+  switch(theme) {
+    case 'dark':
+      return { bg: '#1f2937', border: '#374151', text: '#f3f4f6', textSecondary: '#9ca3af', accent: '#60a5fa', buttonBg: '#374151' };
+    case 'superhuman':
+      return { bg: '#ffffff', border: '#dcd7d3', text: '#292827', textSecondary: '#714cb6', accent: '#cbb7fb', buttonBg: '#e9e5dd' };
+    case 'airtable':
+      return { bg: '#ffffff', border: '#e0e2e6', text: '#181d26', textSecondary: '#333333', accent: '#1b61c9', buttonBg: '#f8fafc' };
+    default:
+      return { bg: '#ffffff', border: '#e5e7eb', text: '#111827', textSecondary: '#6b7280', accent: '#2563eb', buttonBg: '#f3f4f6' };
+  }
+};
+
+const colors = getThemeColors(settings.theme);
+
   return (
-    <header className="h-12 border-b border-gray-300 bg-white flex items-center justify-between px-4 z-20 shadow-sm shrink-0">
+    <header className="h-12 border-b flex items-center justify-between px-4 z-20 shrink-0" 
+      style={{ 
+        backgroundColor: colors.bg,
+        borderColor: colors.border,
+        boxShadow: settings.theme === 'superhuman' ? 'none' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+      }}>
       <div className="flex items-center gap-3">
         <button 
-          className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold hover:bg-blue-700 transition"
+          className="w-8 h-8 rounded flex items-center justify-center text-white font-bold transition"
+          style={{ backgroundColor: settings.theme === 'airtable' ? '#1b61c9' : settings.theme === 'superhuman' ? '#cbb7fb' : '#2563eb' }}
           onClick={() => setSidebarExpanded(!isSidebarExpanded)}
         >
           <Menu size={16} />
         </button>
         <div className="flex items-baseline gap-2">
-          <span className="text-base font-bold tracking-tight font-sans text-gray-900 leading-none">myNavCube</span>
-          <span className="text-[11px] text-gray-500 font-mono tracking-tight">v1.2.0-stable</span>
+          <span className="text-base font-bold tracking-tight font-sans leading-none" 
+            style={{ color: colors.text }}>
+            myNavCube</span>
+          <span className="text-[11px] font-mono tracking-tight" 
+            style={{ color: colors.textSecondary }}>
+            v1.2.0-stable</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+<div className="flex items-center gap-4">
         {/* Languages, Themes, Layouts */}
 <select 
-          className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
+          className="text-xs border py-1 px-2 rounded outline-none cursor-pointer"
+          style={{ 
+            backgroundColor: 'transparent',
+            borderColor: colors.border,
+            color: colors.text
+          }}
           value={settings.language}
           onChange={(e) => {
              const newSettings = { ...settings, language: e.target.value };
@@ -49,7 +79,12 @@ export function TopBar() {
         </select>
         
         <select 
-          className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
+          className="text-xs border py-1 px-2 rounded outline-none cursor-pointer"
+          style={{ 
+            backgroundColor: 'transparent',
+            borderColor: colors.border,
+            color: colors.text
+          }}
           value={settings.theme}
           onChange={(e) => {
              const newSettings = { ...settings, theme: e.target.value };
@@ -60,10 +95,17 @@ export function TopBar() {
           <option value="default">{t('themeDefault')}</option>
           <option value="light">{t('themeLight')}</option>
           <option value="dark">{t('themeDark')}</option>
+          <option value="superhuman">Superhuman</option>
+          <option value="airtable">Airtable</option>
         </select>
         
-        <select 
-          className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
+<select 
+          className="text-xs border py-1 px-2 rounded outline-none cursor-pointer"
+          style={{ 
+            backgroundColor: 'transparent',
+            borderColor: colors.border,
+            color: colors.text
+          }}
           value={settings.layout}
           onChange={(e) => {
              const newSettings = { ...settings, layout: e.target.value as any };
@@ -76,7 +118,8 @@ export function TopBar() {
         </select>
 
         {/* User Dropdown */}
-        <div className="flex items-center gap-2 border-l border-gray-200 pl-4 h-8 relative group">
+        <div className="flex items-center gap-2 h-8 relative group" 
+          style={{ borderColor: colors.border, borderLeftWidth: '1px', borderLeftStyle: 'solid', paddingLeft: '16px' }}>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold outline-none border border-transparent hover:border-blue-300 shadow-sm transition overflow-hidden">

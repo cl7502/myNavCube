@@ -2,8 +2,10 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { useStore } from '../store';
 
 export function SettingsModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { settings } = useStore();
   const [tables, setTables] = useState<string[]>([]);
   const [selectedTable, setSelectedTable] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
@@ -29,9 +31,17 @@ export function SettingsModal({ open, onOpenChange }: { open: boolean, onOpenCha
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <Dialog.Content className="w-[800px] h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col z-50 outline-none">
-            <div className="bg-gray-100 px-4 py-3 flex justify-between items-center border-b border-gray-200 shrink-0">
-              <span className="text-sm font-bold">系统设置 - 管理面板</span>
+<Dialog.Content className="w-[800px] h-[600px] rounded-xl shadow-2xl overflow-hidden flex flex-col z-50 outline-none"
+            style={{ 
+              backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+              border: settings.theme === 'superhuman' ? '1px solid #dcd7d3' : settings.theme === 'dark' ? '1px solid #374151' : 'none'
+            }}>
+            <div className="px-4 py-3 flex justify-between items-center border-b shrink-0"
+              style={{ 
+                backgroundColor: settings.theme === 'dark' ? '#374151' : settings.theme === 'superhuman' ? '#e9e5dd' : '#f3f4f6',
+                borderColor: settings.theme === 'dark' ? '#4b5563' : '#e5e7eb'
+              }}>
+              <span className="text-sm font-bold" style={{ color: settings.theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>系统设置 - 管理面板</span>
               <button className="text-gray-400 hover:text-black transition" onClick={() => onOpenChange(false)}>✕</button>
             </div>
             

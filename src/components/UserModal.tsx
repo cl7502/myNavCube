@@ -97,7 +97,7 @@ function AvataaarsSelector({ onSelect }: { onSelect: (icon: string) => void }) {
 }
 
 export function UserModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
-  const { user, setUser } = useStore();
+  const { user, setUser, settings } = useStore();
   const [name, setName] = useState(user?.name || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [password, setPassword] = useState('');
@@ -164,9 +164,18 @@ export function UserModal({ open, onOpenChange }: { open: boolean, onOpenChange:
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <Dialog.Content className="w-[420px] bg-white rounded-xl shadow-2xl z-50 overflow-hidden outline-none max-h-[90vh] flex flex-col">
-            <div className="bg-gray-100 px-4 py-3 flex justify-between items-center border-b border-gray-200 shrink-0">
-              <Dialog.Title className="text-sm font-bold">个人信息</Dialog.Title>
+          <Dialog.Content className="w-[420px] rounded-xl shadow-2xl z-50 overflow-hidden outline-none max-h-[90vh] flex flex-col"
+            style={{ 
+              backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+              border: settings.theme === 'superhuman' ? '1px solid #dcd7d3' : settings.theme === 'dark' ? '1px solid #374151' : 'none'
+            }}>
+            <div className="px-4 py-3 flex justify-between items-center border-b shrink-0"
+              style={{ 
+                backgroundColor: settings.theme === 'dark' ? '#374151' : settings.theme === 'superhuman' ? '#e9e5dd' : '#f3f4f6',
+                borderColor: settings.theme === 'dark' ? '#4b5563' : '#e5e7eb'
+              }}>
+              <Dialog.Title className="text-sm font-bold"
+                style={{ color: settings.theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>个人信息</Dialog.Title>
               <button className="text-gray-400 hover:text-black transition" onClick={() => onOpenChange(false)}>✕</button>
             </div>
             

@@ -234,6 +234,20 @@ export function TagModal() {
   const [categoryId, setCategoryId] = useState('');
   const [iconColor, setIconColor] = useState('#6b7280');
   const [textColor, setTextColor] = useState('#374151');
+  const [titleFont, setTitleFont] = useState('Inter');
+  const [titleColor, setTitleColor] = useState('#1f2937');
+  const [urlFont, setUrlFont] = useState('Inter');
+  const [urlColor, setUrlColor] = useState('#6b7280');
+  const [urlExternalFont, setUrlExternalFont] = useState('Inter');
+  const [urlExternalColor, setUrlExternalColor] = useState('#6b7280');
+  const [descriptionFont, setDescriptionFont] = useState('Inter');
+  const [descriptionColor, setDescriptionColor] = useState('#6b7280');
+  const [openFontPanel, setOpenFontPanel] = useState<string | null>(null);
+
+  const fontOptions = [
+    'Inter', 'Arial', 'Helvetica', 'Times New Roman', 'Georgia',
+    'Courier New', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Palatino', 'Garamond'
+  ];
 
   useEffect(() => {
     if (editingTag) {
@@ -248,6 +262,14 @@ export function TagModal() {
       setCategoryId(editingTag.category_id || '');
       setIconColor(editingTag.icon_color || '#6b7280');
       setTextColor(editingTag.text_color || '#374151');
+      setTitleFont(editingTag.title_font || 'Inter');
+      setTitleColor(editingTag.title_color || '#1f2937');
+      setUrlFont(editingTag.url_font || 'Inter');
+      setUrlColor(editingTag.url_color || '#6b7280');
+      setUrlExternalFont(editingTag.url_external_font || 'Inter');
+      setUrlExternalColor(editingTag.url_external_color || '#6b7280');
+      setDescriptionFont(editingTag.description_font || 'Inter');
+      setDescriptionColor(editingTag.description_color || '#6b7280');
       if (editingTag.icon_url) {
         if (editingTag.icon_url.includes(':')) setIconTab('iconify');
         else if (editingTag.icon_url.startsWith('http') || editingTag.icon_url.startsWith('data:')) setIconTab('url');
@@ -266,22 +288,38 @@ export function TagModal() {
       setCategoryId(addingTag.categoryId);
       setIconColor('#6b7280');
       setTextColor('#374151');
+      setTitleFont('Inter');
+      setTitleColor('#1f2937');
+      setUrlFont('Inter');
+      setUrlColor('#6b7280');
+      setUrlExternalFont('Inter');
+      setUrlExternalColor('#6b7280');
+      setDescriptionFont('Inter');
+      setDescriptionColor('#6b7280');
     }
   }, [editingTag, addingTag]);
 
 const onSave = async () => {
     if (!title.trim()) return;
     if (!categoryId) return;
-    
+
     if (isAdding) {
       const id = 'tag_' + Date.now();
       const newTag = {
         id,
         category_id: categoryId,
         title: title.trim(),
+        title_font: titleFont,
+        title_color: titleColor,
         url: url || '',
+        url_font: urlFont,
+        url_color: urlColor,
         url_external: urlExternal || '',
+        url_external_font: urlExternalFont,
+        url_external_color: urlExternalColor,
         description: description || '',
+        description_font: descriptionFont,
+        description_color: descriptionColor,
         icon_url: iconUrl || '',
         icon_color: iconColor,
         text_color: textColor,
@@ -298,19 +336,27 @@ const onSave = async () => {
         console.error("Failed to add tag");
       }
     } else if (editingTag) {
-      const updatedTag = { 
-        ...editingTag, 
+      const updatedTag = {
+        ...editingTag,
         category_id: categoryId,
-        title, 
-        url, 
+        title,
+        title_font: titleFont,
+        title_color: titleColor,
+        url,
+        url_font: urlFont,
+        url_color: urlColor,
         url_external: urlExternal,
-        description, 
+        url_external_font: urlExternalFont,
+        url_external_color: urlExternalColor,
+        description,
+        description_font: descriptionFont,
+        description_color: descriptionColor,
         icon_url: iconUrl,
         icon_color: iconColor,
         text_color: textColor,
         show_description: showDescription,
         show_url: showUrl,
-        show_url_external: showUrlExternal 
+        show_url_external: showUrlExternal
       };
       const newTags = tags.map(t => t.id === editingTag.id ? updatedTag : t);
       setTags(newTags);
@@ -350,9 +396,15 @@ const onSave = async () => {
     <Dialog.Root open={!!editingTag || !!addingTag} onOpenChange={(open) => !open && handleClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl w-full max-w-lg z-50 overflow-hidden flex flex-col max-h-[85vh]">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-            <Dialog.Title className="text-lg font-bold text-gray-800">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl w-full max-w-lg z-50 overflow-hidden flex flex-col max-h-[85vh]"
+          style={{ 
+            backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+            border: settings.theme === 'superhuman' ? '1px solid #dcd7d3' : settings.theme === 'dark' ? '1px solid #374151' : 'none'
+          }}>
+          <div className="p-4 border-b flex items-center justify-between shrink-0" 
+            style={{ borderColor: settings.theme === 'dark' ? '#374151' : '#f3f4f6' }}>
+            <Dialog.Title className="text-lg font-bold"
+              style={{ color: settings.theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>
               {isAdding ? '添加标签' : '编辑标签'} {selectedCategory ? `- ${selectedCategory.name}` : ''}
             </Dialog.Title>
             <Dialog.Close asChild>
@@ -363,11 +415,56 @@ const onSave = async () => {
           <div className="p-4 space-y-3 flex-1 overflow-y-auto">
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700 w-16 shrink-0">名称</label>
-              <input 
-                type="text" 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
-                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none" 
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenFontPanel(openFontPanel === 'title' ? null : 'title')}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 mr-2"
+                  style={{ fontFamily: titleFont, color: titleColor }}
+                >
+                  Aa
+                </button>
+                {openFontPanel === 'title' && (
+                  <div className="absolute left-0 top-8 z-10 bg-white border border-gray-200 rounded shadow-lg p-3 w-64">
+                    <div className="mb-2">
+                      <label className="block text-xs text-gray-500 mb-1">字体</label>
+                      <select
+                        value={titleFont}
+                        onChange={(e) => setTitleFont(e.target.value)}
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                        style={{ fontFamily: titleFont }}
+                      >
+                        {fontOptions.map(f => (
+                          <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">颜色</label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input type="color" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer" />
+                        <input type="text" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {presetColors.slice(0, 10).map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setTitleColor(c)}
+                            className={`w-4 h-4 rounded border ${titleColor === c ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                style={{ fontFamily: titleFont, color: titleColor }}
               />
             </div>
 
@@ -387,17 +484,62 @@ const onSave = async () => {
             
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700 w-16 shrink-0">内网URL</label>
-              <input 
-                type="text" 
-                value={url} 
-                onChange={e => setUrl(e.target.value)} 
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenFontPanel(openFontPanel === 'url' ? null : 'url')}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 mr-2"
+                  style={{ fontFamily: urlFont, color: urlColor }}
+                >
+                  Aa
+                </button>
+                {openFontPanel === 'url' && (
+                  <div className="absolute left-0 top-8 z-10 bg-white border border-gray-200 rounded shadow-lg p-3 w-64">
+                    <div className="mb-2">
+                      <label className="block text-xs text-gray-500 mb-1">字体</label>
+                      <select
+                        value={urlFont}
+                        onChange={(e) => setUrlFont(e.target.value)}
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                        style={{ fontFamily: urlFont }}
+                      >
+                        {fontOptions.map(f => (
+                          <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">颜色</label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input type="color" value={urlColor} onChange={(e) => setUrlColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer" />
+                        <input type="text" value={urlColor} onChange={(e) => setUrlColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {presetColors.slice(0, 10).map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setUrlColor(c)}
+                            className={`w-4 h-4 rounded border ${urlColor === c ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
                 placeholder="https://"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none" 
+                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                style={{ fontFamily: urlFont, color: urlColor }}
               />
               <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <input 
-                  type="checkbox" 
-                  checked={showUrl} 
+                <input
+                  type="checkbox"
+                  checked={showUrl}
                   onChange={e => setShowUrl(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -407,17 +549,62 @@ const onSave = async () => {
 
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700 w-16 shrink-0">外网URL</label>
-              <input 
-                type="text" 
-                value={urlExternal} 
-                onChange={e => setUrlExternal(e.target.value)} 
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenFontPanel(openFontPanel === 'urlExternal' ? null : 'urlExternal')}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 mr-2"
+                  style={{ fontFamily: urlExternalFont, color: urlExternalColor }}
+                >
+                  Aa
+                </button>
+                {openFontPanel === 'urlExternal' && (
+                  <div className="absolute left-0 top-8 z-10 bg-white border border-gray-200 rounded shadow-lg p-3 w-64">
+                    <div className="mb-2">
+                      <label className="block text-xs text-gray-500 mb-1">字体</label>
+                      <select
+                        value={urlExternalFont}
+                        onChange={(e) => setUrlExternalFont(e.target.value)}
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                        style={{ fontFamily: urlExternalFont }}
+                      >
+                        {fontOptions.map(f => (
+                          <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">颜色</label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input type="color" value={urlExternalColor} onChange={(e) => setUrlExternalColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer" />
+                        <input type="text" value={urlExternalColor} onChange={(e) => setUrlExternalColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {presetColors.slice(0, 10).map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setUrlExternalColor(c)}
+                            className={`w-4 h-4 rounded border ${urlExternalColor === c ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                value={urlExternal}
+                onChange={e => setUrlExternal(e.target.value)}
                 placeholder="https://"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none" 
+                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                style={{ fontFamily: urlExternalFont, color: urlExternalColor }}
               />
               <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <input 
-                  type="checkbox" 
-                  checked={showUrlExternal} 
+                <input
+                  type="checkbox"
+                  checked={showUrlExternal}
                   onChange={e => setShowUrlExternal(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -427,16 +614,61 @@ const onSave = async () => {
 
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700 w-16 shrink-0">描述</label>
-              <input 
-                type="text" 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none" 
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenFontPanel(openFontPanel === 'description' ? null : 'description')}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 mr-2"
+                  style={{ fontFamily: descriptionFont, color: descriptionColor }}
+                >
+                  Aa
+                </button>
+                {openFontPanel === 'description' && (
+                  <div className="absolute left-0 top-8 z-10 bg-white border border-gray-200 rounded shadow-lg p-3 w-64">
+                    <div className="mb-2">
+                      <label className="block text-xs text-gray-500 mb-1">字体</label>
+                      <select
+                        value={descriptionFont}
+                        onChange={(e) => setDescriptionFont(e.target.value)}
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                        style={{ fontFamily: descriptionFont }}
+                      >
+                        {fontOptions.map(f => (
+                          <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">颜色</label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input type="color" value={descriptionColor} onChange={(e) => setDescriptionColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer" />
+                        <input type="text" value={descriptionColor} onChange={(e) => setDescriptionColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {presetColors.slice(0, 10).map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setDescriptionColor(c)}
+                            className={`w-4 h-4 rounded border ${descriptionColor === c ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                style={{ fontFamily: descriptionFont, color: descriptionColor }}
               />
               <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <input 
-                  type="checkbox" 
-                  checked={showDescription} 
+                <input
+                  type="checkbox"
+                  checked={showDescription}
                   onChange={e => setShowDescription(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />

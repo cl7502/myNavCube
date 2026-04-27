@@ -230,7 +230,7 @@ function IconLibrarySelector({ prefix, iconSet, onSelect, currentIcon, searchQue
 }
 
 export function CategoryModal() {
-  const { editingCategory, setEditingCategory, addingCategory, closeAddCategory, categories, setCategories } = useStore();
+  const { editingCategory, setEditingCategory, addingCategory, closeAddCategory, categories, setCategories, settings } = useStore();
    
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('');
@@ -325,9 +325,16 @@ export function CategoryModal() {
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden flex flex-col max-h-[90vh]">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-            <Dialog.Title className="text-lg font-bold text-gray-800">{isAdding ? '新增分类' : '编辑分类'}</Dialog.Title>
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden flex flex-col max-h-[90vh]"
+          style={{ 
+            backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+            border: settings.theme === 'superhuman' ? '1px solid #dcd7d3' : settings.theme === 'dark' ? '1px solid #374151' : 'none'
+          }}>
+          <div className="p-4 border-b flex items-center justify-between shrink-0" 
+            style={{ borderColor: settings.theme === 'dark' ? '#374151' : '#f3f4f6' }}>
+            <Dialog.Title className="text-lg font-bold"
+              style={{ color: settings.theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>
+              {isAdding ? '新增分类' : '编辑分类'}</Dialog.Title>
             <Dialog.Close asChild>
               <button className="text-gray-400 hover:text-gray-600 outline-none"><Icons.X size={18} /></button>
             </Dialog.Close>

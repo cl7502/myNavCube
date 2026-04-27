@@ -107,17 +107,33 @@ return () => {
   }
 
 return (
-    <aside style={{ width: `${width}px` }} className="h-full bg-white border-r border-gray-300 flex shrink-0 relative flex-col z-10">
-      <div className="p-3 border-b border-gray-100 flex justify-between items-center shrink-0">
-        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1">分类导航</span>
+    <aside className="h-full border-r flex shrink-0 relative flex-col z-10"
+      style={{
+        width: `${width}px`,
+        backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+        borderColor: settings.theme === 'dark' ? '#374151' : settings.theme === 'superhuman' ? '#dcd7d3' : '#e5e7eb'
+      }}>
+      <div className="p-3 border-b flex justify-between items-center shrink-0" 
+        style={{ 
+          borderColor: settings.theme === 'dark' ? '#374151' : settings.theme === 'superhuman' ? '#dcd7d3' : '#f3f4f6' 
+        }}>
+        <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1" 
+          style={{ color: settings.theme === 'dark' ? '#9ca3af' : settings.theme === 'superhuman' ? '#292827' : '#6b7280' }}>
+          分类导航</span>
         <div className="flex items-center gap-1">
-          <button onClick={handleZoomOut} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="缩小" disabled={scale <= 0.6}>
+          <button onClick={handleZoomOut} className="p-1 rounded transition-colors" 
+            style={{ color: settings.theme === 'dark' ? '#9ca3af' : settings.theme === 'superhuman' ? '#714cb6' : '#6b7280' }}
+            title="缩小" disabled={scale <= 0.6}>
             <ZoomOut size={14} />
           </button>
-          <button onClick={handleZoomIn} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="放大" disabled={scale >= 1.5}>
+          <button onClick={handleZoomIn} className="p-1 rounded transition-colors" 
+            style={{ color: settings.theme === 'dark' ? '#9ca3af' : settings.theme === 'superhuman' ? '#714cb6' : '#6b7280' }}
+            title="放大" disabled={scale >= 1.5}>
             <ZoomIn size={14} />
           </button>
-          <button onClick={() => setSidebarExpanded(false)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="收起导航栏">
+          <button onClick={() => setSidebarExpanded(false)} className="p-1 rounded transition-colors" 
+            style={{ color: settings.theme === 'dark' ? '#9ca3af' : settings.theme === 'superhuman' ? '#714cb6' : '#6b7280' }}
+            title="收起导航栏">
              <PanelLeftClose size={16} />
           </button>
         </div>

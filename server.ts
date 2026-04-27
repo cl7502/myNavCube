@@ -51,9 +51,17 @@ CREATE TABLE IF NOT EXISTS tags (
     user_id INTEGER NOT NULL,
     category_id TEXT NOT NULL,
     title TEXT NOT NULL,
+    title_font TEXT DEFAULT 'Inter',
+    title_color TEXT DEFAULT '#1f2937',
     url TEXT NOT NULL DEFAULT '',
+    url_font TEXT DEFAULT 'Inter',
+    url_color TEXT DEFAULT '#6b7280',
     url_external TEXT NOT NULL DEFAULT '',
+    url_external_font TEXT DEFAULT 'Inter',
+    url_external_color TEXT DEFAULT '#6b7280',
     description TEXT DEFAULT '',
+    description_font TEXT DEFAULT 'Inter',
+    description_color TEXT DEFAULT '#6b7280',
     icon_url TEXT DEFAULT '',
     icon_color TEXT DEFAULT '#6b7280',
     text_color TEXT DEFAULT '#374151',
@@ -72,6 +80,14 @@ CREATE TABLE IF NOT EXISTS tags (
   ALTER TABLE tags ADD COLUMN show_url_external INTEGER DEFAULT 0;
   ALTER TABLE tags ADD COLUMN icon_color TEXT DEFAULT '#6b7280';
   ALTER TABLE tags ADD COLUMN text_color TEXT DEFAULT '#374151';
+  ALTER TABLE tags ADD COLUMN title_font TEXT DEFAULT 'Inter';
+  ALTER TABLE tags ADD COLUMN title_color TEXT DEFAULT '#1f2937';
+  ALTER TABLE tags ADD COLUMN url_font TEXT DEFAULT 'Inter';
+  ALTER TABLE tags ADD COLUMN url_color TEXT DEFAULT '#6b7280';
+  ALTER TABLE tags ADD COLUMN url_external_font TEXT DEFAULT 'Inter';
+  ALTER TABLE tags ADD COLUMN url_external_color TEXT DEFAULT '#6b7280';
+  ALTER TABLE tags ADD COLUMN description_font TEXT DEFAULT 'Inter';
+  ALTER TABLE tags ADD COLUMN description_color TEXT DEFAULT '#6b7280';
 `);
 
 // Middleware for Auth
@@ -179,16 +195,16 @@ app.delete('/api/categories/:id', authenticateToken, (req: any, res) => {
 });
 
 app.post('/api/tags', authenticateToken, (req: any, res) => {
-  const { id, category_id, title, url, url_external, description, icon_url, position_order, show_description, show_url, show_url_external } = req.body;
-  db.prepare('INSERT INTO tags (id, user_id, category_id, title, url, url_external, description, icon_url, position_order, show_description, show_url, show_url_external) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(id, req.user.id, category_id, title, url || '', url_external || '', description || '', icon_url || '', position_order || 0, show_description ? 1 : 0, show_url ? 1 : 0, show_url_external ? 1 : 0);
+  const { id, category_id, title, title_font, title_color, url, url_font, url_color, url_external, url_external_font, url_external_color, description, description_font, description_color, icon_url, icon_color, text_color, position_order, show_description, show_url, show_url_external } = req.body;
+  db.prepare(`INSERT INTO tags (id, user_id, category_id, title, title_font, title_color, url, url_font, url_color, url_external, url_external_font, url_external_color, description, description_font, description_color, icon_url, icon_color, text_color, position_order, show_description, show_url, show_url_external) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, req.user.id, category_id, title, title_font || 'Inter', title_color || '#1f2937', url || '', url_font || 'Inter', url_color || '#6b7280', url_external || '', url_external_font || 'Inter', url_external_color || '#6b7280', description || '', description_font || 'Inter', description_color || '#6b7280', icon_url || '', icon_color || '#6b7280', text_color || '#374151', position_order || 0, show_description ? 1 : 0, show_url ? 1 : 0, show_url_external ? 1 : 0);
   res.json({ success: true });
 });
 
 app.put('/api/tags/:id', authenticateToken, (req: any, res) => {
-  const { category_id, title, url, url_external, description, icon_url, position_order, show_description, show_url, show_url_external } = req.body;
-  db.prepare('UPDATE tags SET category_id = ?, title = ?, url = ?, url_external = ?, description = ?, icon_url = ?, position_order = ?, show_description = ?, show_url = ?, show_url_external = ? WHERE id = ? AND user_id = ?')
-    .run(category_id, title, url || '', url_external || '', description || '', icon_url || '', position_order || 0, show_description ? 1 : 0, show_url ? 1 : 0, show_url_external ? 1 : 0, req.params.id, req.user.id);
+  const { category_id, title, title_font, title_color, url, url_font, url_color, url_external, url_external_font, url_external_color, description, description_font, description_color, icon_url, icon_color, text_color, position_order, show_description, show_url, show_url_external } = req.body;
+  db.prepare(`UPDATE tags SET category_id = ?, title = ?, title_font = ?, title_color = ?, url = ?, url_font = ?, url_color = ?, url_external = ?, url_external_font = ?, url_external_color = ?, description = ?, description_font = ?, description_color = ?, icon_url = ?, icon_color = ?, text_color = ?, position_order = ?, show_description = ?, show_url = ?, show_url_external = ? WHERE id = ? AND user_id = ?`)
+    .run(category_id, title, title_font || 'Inter', title_color || '#1f2937', url || '', url_font || 'Inter', url_color || '#6b7280', url_external || '', url_external_font || 'Inter', url_external_color || '#6b7280', description || '', description_font || 'Inter', description_color || '#6b7280', icon_url || '', icon_color || '#6b7280', text_color || '#374151', position_order || 0, show_description ? 1 : 0, show_url ? 1 : 0, show_url_external ? 1 : 0, req.params.id, req.user.id);
   res.json({ success: true });
 });
 

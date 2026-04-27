@@ -48,9 +48,17 @@ export interface Tag {
   id: string;
   category_id: string;
   title: string;
+  title_font: string;
+  title_color: string;
   url: string;
+  url_font: string;
+  url_color: string;
   url_external: string;
+  url_external_font: string;
+  url_external_color: string;
   description: string;
+  description_font: string;
+  description_color: string;
   icon_url: string;
   icon_color: string;
   text_color: string;
