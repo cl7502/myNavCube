@@ -147,6 +147,22 @@ export function MainContent() {
             </label>
           </div>
         );
+      case 'category':
+        return (
+          <div className="space-y-2 text-xs p-2">
+            <label className="flex flex-col"><span className="mb-1">分类文字大小 ({Math.round(settings.sidebarScale * 12)}px)</span>
+              <Slider.Root className="relative flex items-center select-none touch-none w-full h-4" value={[settings.sidebarScale]} max={1.5} min={0.6} step={0.1} onValueChange={(v) => {
+                const newScale = v[0];
+                const newSettings = { ...settings, sidebarScale: newScale };
+                setSettings({ sidebarScale: newScale });
+                import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
+              }}>
+                <Slider.Track className="bg-gray-200 relative grow rounded-full h-[2px]"><Slider.Range className="absolute bg-blue-500 rounded-full h-full" /></Slider.Track>
+                <Slider.Thumb className="block w-3 h-3 bg-white shadow border border-gray-300 rounded-full outline-none" />
+              </Slider.Root>
+            </label>
+          </div>
+        );
       default:
         return null;
     }
@@ -185,37 +201,38 @@ export function MainContent() {
                    </button>
                    <AnimatePresence>
                      {layoutPanelOpen && (
-                       <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1 bg-white">
-                         {['tag', 'spacing', 'icon', 'text', 'count'].map((panel) => (
-                           <div key={panel} className="relative">
-                             <button 
-                               className={clsx("px-2 py-1 text-xs rounded hover:bg-blue-50 whitespace-nowrap", activePanel === panel ? 'bg-blue-50 text-blue-600' : 'text-gray-600')} 
-                               onClick={() => setActivePanel(activePanel === panel ? null : panel)}
-                             >
-                               {panel === 'tag' && '标签'}
-                               {panel === 'spacing' && '标签间距'}
-                               {panel === 'icon' && '图标'}
-                               {panel === 'text' && '文字'}
-                               {panel === 'count' && '标签数量'}
-                             </button>
-                             <AnimatePresence>
-                               {activePanel === panel && (
-                                 <motion.div
-                                   initial={{ opacity: 0, y: -5 }}
-                                   animate={{ opacity: 1, y: 0 }}
-                                   exit={{ opacity: 0, y: -5 }}
-                                   transition={{ duration: 0.15 }}
-                                   className="absolute left-0 top-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[200px]"
-                                 >
-                                   <div className="p-2">
-                                     {renderPanel()}
-                                   </div>
-                                 </motion.div>
-                               )}
-                             </AnimatePresence>
-                           </div>
-                         ))}
-                       </div>
+                    <div className="flex items-center gap-0.5 border border-gray-200 rounded px-1 bg-white">
+                          {['tag', 'spacing', 'icon', 'text', 'count', 'category'].map((panel) => (
+                            <div key={panel} className="relative">
+                              <button
+                                className={clsx("px-2 py-1 text-xs rounded hover:bg-blue-50 whitespace-nowrap", activePanel === panel ? 'bg-blue-50 text-blue-600' : 'text-gray-600')}
+                                onClick={() => setActivePanel(activePanel === panel ? null : panel)}
+                              >
+                                {panel === 'tag' && '标签'}
+                                {panel === 'spacing' && '标签间距'}
+                                {panel === 'icon' && '图标'}
+                                {panel === 'text' && '文字'}
+                                {panel === 'count' && '标签数量'}
+                                {panel === 'category' && '分类'}
+                              </button>
+                              <AnimatePresence>
+                                {activePanel === panel && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -5 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute left-0 top-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[200px]"
+                                  >
+                                    <div className="p-2">
+                                      {renderPanel()}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ))}
+                        </div>
                      )}
                    </AnimatePresence>
                 </div>
