@@ -30,6 +30,7 @@ export interface UserSettings {
     spacingY: number;
     tagsPerRow: number;
     tagsPerColumn: number;
+    categoryTitleSize: number;
   };
 }
 
@@ -110,24 +111,25 @@ const defaultSettings: UserSettings = {
   layout: 'vertical',
   sidebarWidth: 250,
   sidebarScale: 1,
- tagLayout: {
-    width: 200,
-    height: 60,
-    borderThickness: 1,
-    borderColor: '#e5e7eb',
-    textSize: 14,
-    iconSize: 24,
-    descSize: 12,
-    descFont: 'Inter',
-    descColor: '#666666',
-    urlSize: 10,
-    urlFont: 'Inter',
-    urlColor: '#999999',
-    spacingX: 10,
-    spacingY: 10,
-    tagsPerRow: 0,
-    tagsPerColumn: 0
-  }
+tagLayout: {
+     width: 200,
+     height: 60,
+     borderThickness: 1,
+     borderColor: '#e5e7eb',
+     textSize: 14,
+     iconSize: 24,
+     descSize: 12,
+     descFont: 'Inter',
+     descColor: '#666666',
+     urlSize: 10,
+     urlFont: 'Inter',
+     urlColor: '#999999',
+     spacingX: 10,
+     spacingY: 10,
+     tagsPerRow: 0,
+     tagsPerColumn: 0,
+     categoryTitleSize: 12
+   }
 };
 
 export const useStore = create<AppState>((set) => ({

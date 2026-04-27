@@ -39,12 +39,34 @@ function renderTagIcon(tag: Tag, size: number) {
 }
 
 export function MainContent() {
-  const { settings, setSettings, categories, tags, selectedCategoryId, setEditingTag } = useStore();
+  const settings = useStore((state: any) => state.settings);
+  const setSettings = useStore((state: any) => state.setSettings);
+  const categories = useStore((state: any) => state.categories);
+  const tags = useStore((state: any) => state.tags);
+  const selectedCategoryId = useStore((state: any) => state.selectedCategoryId);
+  const setEditingTag = useStore((state: any) => state.setEditingTag);
   const [layoutPanelOpen, setLayoutPanelOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const layoutRef = useRef<HTMLDivElement>(null);
-     
-  const t = useTranslation(settings.language);
+  const [categoryTitleSize, setCategoryTitleSize] = useState(settings?.tagLayout?.categoryTitleSize ?? 12);
+  const t = useTranslation(settings?.language || 'zh');
+
+  useEffect(() => {
+    if (settings?.tagLayout?.categoryTitleSize && settings.tagLayout.categoryTitleSize !== categoryTitleSize) {
+      setCategoryTitleSize(settings.tagLayout.categoryTitleSize);
+    }
+  }, [settings?.tagLayout?.categoryTitleSize]);
+
+  const handleCategoryTitleSizeChange = (val: number) => {
+    setCategoryTitleSize(val);
+    const newTagLayout = { ...settings.tagLayout, categoryTitleSize: val };
+    const newSettings = { ...settings, tagLayout: newTagLayout };
+    setSettings({ tagLayout: newTagLayout });
+    import('../lib/api').then(({api}) => api.put('/api/user/settings', { 
+      language: settings.language,
+      data: newSettings
+    }).catch(()=>null));
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -150,13 +172,8 @@ export function MainContent() {
       case 'category':
         return (
           <div className="space-y-2 text-xs p-2">
-            <label className="flex flex-col"><span className="mb-1">分类文字大小 ({Math.round(settings.sidebarScale * 12)}px)</span>
-              <Slider.Root className="relative flex items-center select-none touch-none w-full h-4" value={[settings.sidebarScale]} max={1.5} min={0.6} step={0.1} onValueChange={(v) => {
-                const newScale = v[0];
-                const newSettings = { ...settings, sidebarScale: newScale };
-                setSettings({ sidebarScale: newScale });
-                import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
-              }}>
+            <label className="flex flex-col"><span className="mb-1">分类文字大小 ({settings.tagLayout?.categoryTitleSize ?? 12}px)</span>
+              <Slider.Root className="relative flex items-center select-none touch-none w-full h-4" value={[settings.tagLayout?.categoryTitleSize ?? 12]} max={24} min={8} step={1} onValueChange={(v) => handleCategoryTitleSizeChange(v[0])}>
                 <Slider.Track className="bg-gray-200 relative grow rounded-full h-[2px]"><Slider.Range className="absolute bg-blue-500 rounded-full h-full" /></Slider.Track>
                 <Slider.Thumb className="block w-3 h-3 bg-white shadow border border-gray-300 rounded-full outline-none" />
               </Slider.Root>
@@ -266,7 +283,7 @@ function HorizontalLayout() {
           {catInfo && depth > 0 && (
               <div className="flex items-center gap-2 mb-3 group">
                 <div className="w-1 h-3 rounded-sm" style={{ backgroundColor: catInfo.icon_color || '#3b82f6' }}></div>
-                <h3 className="text-[12px] font-bold text-gray-700">{catInfo.name}</h3>
+                <h3 className="font-bold text-gray-700" style={{ fontSize: settings.tagLayout?.categoryTitleSize ?? 12 }}>{catInfo.name}</h3>
                 <button 
                    className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-blue-600 rounded bg-gray-100 hover:bg-blue-50 transition" 
                    title="在此分类下添加标签"
@@ -428,7 +445,7 @@ return (
             <div className="flex flex-col min-w-[260px] shrink-0 border-r border-gray-200 pr-5" style={{ minWidth: settings.tagLayout.width ? Math.max(260, (settings.tagLayout.width + settings.tagLayout.spacingX) * (settings.tagLayout.tagsPerRow || 5)) : 260 }}>
 <div className="flex items-center gap-2 mb-3">
                 <div className="w-1 h-4 rounded-sm" style={{ backgroundColor: selectedCat?.icon_color || '#6b7280' }}></div>
-                <h2 className="text-sm font-bold text-gray-700">{selectedCat ? selectedCat.name : t('rootLevel')}</h2>
+                <h2 className="font-bold text-gray-700" style={{ fontSize: settings.tagLayout?.categoryTitleSize ?? 12 }}>{selectedCat ? selectedCat.name : t('rootLevel')}</h2>
               </div>
 {(() => {
                 const tagsPerColumn = settings.tagLayout.tagsPerColumn || 0;
