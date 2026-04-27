@@ -20,16 +20,7 @@ export function MainContent() {
   return (
     <section className={clsx("flex-1 flex flex-col overflow-hidden", settings.theme === 'dark' ? 'bg-gray-900' : 'bg-[#F9FAFB]')}>
       <div className={clsx("h-10 border-b flex items-center px-4 justify-between shrink-0", settings.theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300')}>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setEditMode(!isEditMode)}
-            className={clsx("px-3 py-1 rounded text-[11px] font-medium flex items-center gap-1 transition", isEditMode ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-blue-600 text-white hover:bg-blue-700")}
-          >
-            {isEditMode ? <><Pencil size={12}/>{t('editMode')}</> : <><Eye size={12}/>{t('viewMode')}</>}
-          </button>
-          
-          <div className={clsx("h-6 w-px mx-1", settings.theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300')}></div>
-
+<div className="flex items-center gap-2">
           {isEditMode && (
              <div className="flex items-center gap-2 text-xs">
                 <button 
@@ -52,7 +43,7 @@ export function MainContent() {
                       );
                    }}
                 >
-                    <Plus size={12}/><span>添加标签</span>
+                    <Plus size={12}/><span>{t('addTag')}</span>
                 </button>
                 <div className="h-4 w-px bg-gray-200 mx-0.5"></div>
                 <Popover.Root>
