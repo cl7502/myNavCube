@@ -125,20 +125,34 @@ function CategoryItem({ category, index, allCats, renderTree }: any) {
   const [expanded, setExpanded] = useState(category.is_expanded);
   const t = useTranslation(settings.language);
   
-  return (
+return (
     <Draggable draggableId={`cat-${category.id}`} index={index} isDragDisabled={!isEditMode}>
       {(provided) => {
         let IconComp: any = null;
         let isCustomSvg = false;
         let isImage = false;
+        let iconUrl: string | null = null;
         if (category.icon) {
           if (category.icon.startsWith('<svg')) {
             isCustomSvg = true;
           } else if (category.icon.startsWith('http') || category.icon.startsWith('data:image')) {
             isImage = true;
+            iconUrl = category.icon;
+          } else if (category.icon.startsWith('dicebear:')) {
+            const parts = category.icon.split(':');
+            iconUrl = `https://api.dicebear.com/9.x/${parts[1]}/svg?seed=${parts[2]}`;
+          } else if (category.icon.startsWith('openpeeps:')) {
+            const parts = category.icon.split(':');
+            iconUrl = `https://api.openpeeps.org/v3/peeps?type=${parts[1]}&id=${parts[2]}`;
+          } else if (category.icon.startsWith('avataaars:')) {
+            const parts = category.icon.split(':');
+            iconUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${parts[1]}`;
+          } else if (category.icon.includes(':')) {
+            const [prefix, name] = category.icon.split(':');
+            iconUrl = `https://api.iconify.design/${prefix}/${name}.svg?width=16&height=16&color=${encodeURIComponent(category.icon_color || '#3b82f6')}`;
           } else {
              IconComp = (Icons as any)[category.icon];
-          }
+           }
         }
         
         return (
@@ -161,13 +175,13 @@ onDoubleClick={() => {
                      ) : <span className="w-[12px]"></span>}
                    </div>
                    
-                   {category.icon ? (
-                     <div className="shrink-0 flex items-center justify-center w-4 h-4" style={{ color: category.icon_color || 'inherit' }}>
-                        {isCustomSvg && <div dangerouslySetInnerHTML={{ __html: category.icon }} className="w-full h-full [&>svg]:w-full [&>svg]:h-full" />}
-                        {isImage && <img src={category.icon} className="w-full h-full object-contain" alt="" />}
-                        {IconComp && <IconComp size={14} />}
-                     </div>
-                   ) : null}
+{category.icon ? (
+                      <div className="shrink-0 flex items-center justify-center w-4 h-4" style={{ color: category.icon_color || 'inherit' }}>
+                         {isCustomSvg && <div dangerouslySetInnerHTML={{ __html: category.icon }} className="w-full h-full [&>svg]:w-full [&>svg]:h-full" />}
+                         {(isImage || iconUrl) && <img src={iconUrl!} className="w-full h-full object-contain" alt="" />}
+                         {IconComp && <IconComp size={14} />}
+                      </div>
+                    ) : null}
                    
                    <span className="truncate select-none" style={{ color: category.text_color || 'inherit' }}>{category.name}</span>
                  </div>

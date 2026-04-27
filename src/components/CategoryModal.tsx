@@ -1,8 +1,9 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useStore, Category } from '../store';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as Icons from 'lucide-react';
 import { api } from '../lib/api';
+import * as Tabs from '@radix-ui/react-tabs';
 
 const commonIcons = [
   'Globe', 'Star', 'Heart', 'Zap', 'Book', 'Briefcase', 'Coffee', 'Code', 'Cpu', 'Database', 'FileText', 'Folder', 'Home', 'Image', 'Link', 'Map', 'MessageSquare', 'Music', 'Paperclip', 'Play', 'Search', 'Settings', 'ShoppingBag', 'Smile', 'Sun', 'Tag', 'Terminal', 'Tool', 'TrendingUp', 'Truck', 'Tv', 'Umbrella', 'User', 'Video', 'Watch', 'Wifi'
@@ -14,6 +15,178 @@ const presetColors = [
   '#000000', '#ffffff', '#fef2f2', '#fef3c7', '#ecfccb', '#ccfbf1', '#cffafe', '#e0f2fe', '#dbeafe', '#e0e7ff', '#eef2ff', '#fae8ff', '#ffe4e6'
 ];
 
+const diceBearStyles = ['adventurer', 'adventurer-neutral', 'avataaars', 'big-ears', 'big-smile', 'bottts', 'bottts-neutral', 'croodles', 'croodles-neutral', 'fun-emoji', 'icons', 'identicon', 'initials', 'lorelei', 'lorelei-neutral', 'micah', 'miniavs', 'notionists', 'notionists-neutral', 'open-peeps', 'personas', 'pixel-art', 'pixel-art-neutral', 'shapes', 'thumbs'];
+
+
+
+const avataaarsOptions = [
+  { name: 'Default Male', seed: 'Felix' },
+  { name: 'Default Female', seed: 'Lucy' },
+  { name: 'Light', seed: 'Light' },
+  { name: 'Medium', seed: 'Medium' },
+  { name: 'Dark', seed: 'Dark' },
+  { name: 'Auburn', seed: 'Auburn' },
+  { name: 'Black', seed: 'Black' },
+  { name: 'Blonde', seed: 'Blonde' },
+  { name: 'Brown', seed: 'Brown' },
+  { name: 'Red', seed: 'Red' },
+  { name: 'White', seed: 'White' },
+  { name: 'Pink', seed: 'Pink' },
+  { name: 'Blue', seed: 'Blue' },
+  { name: 'Green', seed: 'Green' },
+  { name: 'Purple', seed: 'Purple' },
+  { name: 'Orange', seed: 'Orange' },
+];
+
+function IconifySearch({ onSelect, searchQuery }: { onSelect: (icon: string) => void; searchQuery: string }) {
+  const [results, setResults] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const searchIcons = useCallback(async () => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(searchQuery)}&limit=50`);
+      const data = await res.json();
+      setResults(data.icons || []);
+    } catch (e) {
+      console.error('Failed to search iconify:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const timer = setTimeout(searchIcons, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchIcons]);
+
+  return (
+    <div className="h-48 overflow-y-auto border border-gray-200 rounded p-2">
+      {loading ? (
+        <div className="flex items-center justify-center h-full text-gray-400 text-sm">搜索中...</div>
+      ) : results.length > 0 ? (
+        <div className="grid grid-cols-8 gap-1">
+          {results.map((iconName) => (
+            <button
+              key={iconName}
+              onClick={() => onSelect(iconName)}
+              className="p-2 flex items-center justify-center rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-400"
+              title={iconName}
+            >
+              <img
+                src={`https://api.iconify.design/${iconName.split(':')[0]}/${iconName.split(':')[1]}.svg?width=20&height=20`}
+                alt={iconName}
+                className="w-5 h-5"
+              />
+            </button>
+          ))}
+        </div>
+      ) : searchQuery ? (
+        <div className="flex items-center justify-center h-full text-gray-400 text-sm">未找到图标</div>
+      ) : (
+        <div className="flex items-center justify-center h-full text-gray-400 text-sm">输入关键词搜索</div>
+      )}
+    </div>
+  );
+}
+
+function DiceBearSelector({ onSelect, searchQuery }: { onSelect: (icon: string) => void; searchQuery: string }) {
+  const [style, setStyle] = useState('adventurer');
+  const seeds = searchQuery.trim() 
+    ? [searchQuery.trim(), ...Array.from({ length: 29 }, (_, i) => `seed${i + 1}`)]
+    : Array.from({ length: 30 }, (_, i) => `seed${i + 1}`);
+
+  return (
+    <div className="space-y-2">
+      <select
+        value={style}
+        onChange={(e) => setStyle(e.target.value)}
+        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none text-sm"
+      >
+        {diceBearStyles.map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
+      <div className="h-48 overflow-y-auto border border-gray-200 rounded p-2">
+        <div className="grid grid-cols-6 gap-2">
+          {seeds.map((seed, idx) => (
+            <button
+              key={`${seed}-${idx}`}
+              onClick={() => onSelect(`dicebear:${style}:${seed}`)}
+              className="p-2 flex items-center justify-center rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-400"
+            >
+              <img
+                src={`https://api.dicebear.com/9.x/${style}/svg?seed=${seed}`}
+                alt={seed}
+                className="w-8 h-8"
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OpenPeepsSelector({ onSelect, searchQuery }: { onSelect: (icon: string) => void; searchQuery: string }) {
+  const seeds = searchQuery.trim()
+    ? [searchQuery.trim(), ...Array.from({ length: 29 }, (_, i) => `seed${i + 1}`)]
+    : Array.from({ length: 30 }, (_, i) => `seed${i + 1}`);
+
+  return (
+    <div className="h-48 overflow-y-auto border border-gray-200 rounded p-2">
+      <div className="grid grid-cols-5 gap-2">
+        {seeds.map((seed, idx) => (
+          <button
+            key={`${seed}-${idx}`}
+            onClick={() => onSelect(`openpeeps:${seed}`)}
+            className="p-2 flex items-center justify-center rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-400"
+          >
+            <img
+              src={`https://api.dicebear.com/9.x/open-peeps/svg?seed=${seed}`}
+              alt={seed}
+              className="w-10 h-10"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AvataaarsSelector({ onSelect, searchQuery }: { onSelect: (icon: string) => void; searchQuery: string }) {
+  const filteredOptions = searchQuery.trim()
+    ? [...avataaarsOptions, { name: searchQuery.trim(), seed: searchQuery.trim() }]
+    : avataaarsOptions;
+
+  return (
+    <div className="space-y-2">
+      <div className="h-48 overflow-y-auto border border-gray-200 rounded p-2">
+        <div className="grid grid-cols-4 gap-2">
+          {filteredOptions.map((opt) => (
+            <button
+              key={opt.seed}
+              onClick={() => onSelect(`avataaars:${opt.seed}`)}
+              className="p-2 flex flex-col items-center justify-center rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-400"
+            >
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${opt.seed}`}
+                alt={opt.name}
+                className="w-12 h-12"
+              />
+              <span className="text-[10px] text-gray-500 mt-1">{opt.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CategoryModal() {
   const { editingCategory, setEditingCategory, addingCategory, closeAddCategory, categories, setCategories } = useStore();
    
@@ -21,6 +194,8 @@ export function CategoryModal() {
   const [icon, setIcon] = useState('');
   const [iconColor, setIconColor] = useState('#3b82f6');
   const [textColor, setTextColor] = useState('#374151');
+  const [activeTab, setActiveTab] = useState('lucide');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isAdding = !!addingCategory;
   const isOpen = !!editingCategory || !!addingCategory;
@@ -31,11 +206,19 @@ export function CategoryModal() {
       setIcon(editingCategory.icon || '');
       setIconColor(editingCategory.icon_color || '#3b82f6');
       setTextColor(editingCategory.text_color || '#374151');
+      if (editingCategory.icon) {
+        if (editingCategory.icon.startsWith('dicebear:')) setActiveTab('dicebear');
+        else if (editingCategory.icon.startsWith('openpeeps:')) setActiveTab('openpeeps');
+        else if (editingCategory.icon.startsWith('avataaars:')) setActiveTab('avataaars');
+        else if (editingCategory.icon.includes(':')) setActiveTab('iconify');
+        else setActiveTab('lucide');
+      }
     } else if (addingCategory) {
       setName(addingCategory.name || '');
       setIcon('');
       setIconColor('#3b82f6');
       setTextColor('#374151');
+      setActiveTab('lucide');
     }
   }, [editingCategory, addingCategory]);
 
@@ -82,12 +265,41 @@ export function CategoryModal() {
     }
   };
 
+  const renderIconPreview = () => {
+    if (!icon) return null;
+    
+    if (icon.startsWith('http') || icon.startsWith('data:image')) {
+      return <img src={icon} alt="preview" className="w-8 h-8" />;
+    }
+    if (icon.startsWith('<svg')) {
+      return <div dangerouslySetInnerHTML={{ __html: icon }} className="w-8 h-8" />;
+    }
+    if (icon.startsWith('dicebear:')) {
+      const parts = icon.split(':');
+      return <img src={`https://api.dicebear.com/9.x/${parts[1]}/svg?seed=${parts[2]}`} alt="preview" className="w-8 h-8" />;
+    }
+    if (icon.startsWith('openpeeps:')) {
+      const parts = icon.split(':');
+      return <img src={`https://api.dicebear.com/9.x/open-peeps/svg?seed=${parts[1]}`} alt="preview" className="w-8 h-8" />;
+    }
+    if (icon.startsWith('avataaars:')) {
+      const parts = icon.split(':');
+      return <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${parts[1]}`} alt="preview" className="w-8 h-8" />;
+    }
+    if (icon.includes(':')) {
+      const [prefix, name] = icon.split(':');
+      return <img src={`https://api.iconify.design/${prefix}/${name}.svg?width=24&height=24&color=${encodeURIComponent(iconColor)}`} alt="preview" className="w-8 h-8" />;
+    }
+    const IconComp = (Icons as any)[icon];
+    return IconComp ? <IconComp size={24} style={{ color: iconColor }} /> : null;
+  };
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
             <Dialog.Title className="text-lg font-bold text-gray-800">{isAdding ? '新增分类' : '编辑分类'}</Dialog.Title>
             <Dialog.Close asChild>
               <button className="text-gray-400 hover:text-gray-600 outline-none"><Icons.X size={18} /></button>
@@ -105,7 +317,7 @@ export function CategoryModal() {
               />
             </div>
             
-<div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">文本颜色</label>
                 <div className="flex items-center gap-2 mb-2">
@@ -145,31 +357,87 @@ export function CategoryModal() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">图标选择</label>
-              <div className="grid grid-cols-6 gap-2">
-                 <button 
-                   onClick={() => setIcon('')} 
-                   className={`p-2 flex items-center justify-center rounded border ${icon === '' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}
-                   title="No Icon"
-                 >
-                   <Icons.Ban size={16} className="text-gray-400" />
-                 </button>
-                 {commonIcons.map(iconName => {
-                    const IconComp = (Icons as any)[iconName];
-                    return (
-                       <button 
-                         key={iconName}
-                         onClick={() => setIcon(iconName)}
-                         className={`p-2 flex items-center justify-center rounded border ${icon === iconName ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}
-                         title={iconName}
-                       >
-                         {IconComp && <IconComp size={16} />}
-                       </button>
-                    )
-                 })}
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                图标选择
+                {icon && (
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    (预览: <span className="inline-flex items-center">{renderIconPreview()}</span>)
+                  </span>
+                )}
+              </label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索图标..."
+                className="w-full px-3 py-2 mb-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none text-sm"
+              />
+              <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="border border-gray-200 rounded">
+                <Tabs.List className="flex border-b border-gray-200 bg-gray-50">
+                  <Tabs.Trigger value="lucide" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    Lucide
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="iconify" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    Iconify
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="dicebear" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    DiceBear
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="openpeeps" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    Open Peeps
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="avataaars" className="px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 flex-1 text-center">
+                    Avataaars
+                  </Tabs.Trigger>
+                </Tabs.List>
+                
+                <div className="p-3">
+                  <Tabs.Content value="lucide">
+                    <div className="grid grid-cols-6 gap-2">
+                      <button 
+                        onClick={() => setIcon('')} 
+                        className={`p-2 flex items-center justify-center rounded border ${icon === '' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}
+                        title="No Icon"
+                      >
+                        <Icons.Ban size={16} className="text-gray-400" />
+                      </button>
+                      {commonIcons.filter(iconName => 
+                        !searchQuery || iconName.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).map(iconName => {
+                         const IconComp = (Icons as any)[iconName];
+                         return (
+                            <button 
+                              key={iconName}
+                              onClick={() => setIcon(iconName)}
+                              className={`p-2 flex items-center justify-center rounded border ${icon === iconName ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}
+                              title={iconName}
+                            >
+                              {IconComp && <IconComp size={16} />}
+                            </button>
+                         )
+                      })}
+                    </div>
+                  </Tabs.Content>
+                  
+                  <Tabs.Content value="iconify">
+                    <IconifySearch onSelect={setIcon} searchQuery={searchQuery} />
+                  </Tabs.Content>
+                  
+                  <Tabs.Content value="dicebear">
+                    <DiceBearSelector onSelect={setIcon} searchQuery={searchQuery} />
+                  </Tabs.Content>
+                  
+                  <Tabs.Content value="openpeeps">
+                    <OpenPeepsSelector onSelect={setIcon} searchQuery={searchQuery} />
+                  </Tabs.Content>
+                  
+                  <Tabs.Content value="avataaars">
+                    <AvataaarsSelector onSelect={setIcon} searchQuery={searchQuery} />
+                  </Tabs.Content>
+                </div>
+              </Tabs.Root>
               <div className="mt-2 text-xs text-gray-500">
-                或直接输入SVG路径 / Image URL（如果图标不是系统内置的）：
+                自定义 SVG / 图片 URL：
                 <input 
                   type="text" 
                   value={icon} 
@@ -182,7 +450,7 @@ export function CategoryModal() {
 
           </div>
           
-          <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50">
+          <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 shrink-0">
              <Dialog.Close asChild>
                 <button className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-200 rounded">取消</button>
              </Dialog.Close>
