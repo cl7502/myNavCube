@@ -1,5 +1,5 @@
-import { useStore, UserSettings } from '../store';
-import { Pencil, Eye, Rows3, Globe, Plus, Settings } from 'lucide-react';
+import { useStore, UserSettings, Tag } from '../store';
+import { Pencil, Eye, Rows3, Globe, Plus, Settings, Trash2, Edit3 } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Slider from '@radix-ui/react-slider';
 import clsx from 'clsx';
@@ -7,8 +7,8 @@ import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTranslation } from '../i18n';
 
 export function MainContent() {
-  const { isEditMode, setEditMode, settings, setSettings, categories, tags, selectedCategoryId } = useStore();
-  
+  const { isEditMode, setEditMode, settings, setSettings, categories, tags, selectedCategoryId, setEditingTag } = useStore();
+   
   const t = useTranslation(settings.language);
 
   const handleStyleChange = (key: keyof UserSettings['tagLayout'], val: any) => {
@@ -110,12 +110,12 @@ export function MainContent() {
                               <input type="number" value={settings.tagLayout.spacingY} onChange={(e) => handleStyleChange('spacingY', Number(e.target.value))} className="border rounded px-1 py-0.5 text-xs text-black" />
                             </label>
                          </div>
-                         <label className="flex flex-col"><span className="mb-1">每行数量 ({settings.tagLayout.tagsPerRow}个)</span>
-                           <Slider.Root className="relative flex items-center select-none touch-none w-full h-4" value={[settings.tagLayout.tagsPerRow]} max={20} min={1} step={1} onValueChange={(v) => handleStyleChange('tagsPerRow', v[0])}>
-                              <Slider.Track className="bg-gray-200 relative grow rounded-full h-[2px]"><Slider.Range className="absolute bg-blue-500 rounded-full h-full" /></Slider.Track>
-                              <Slider.Thumb className="block w-3 h-3 bg-white shadow border border-gray-300 rounded-full outline-none" />
-                           </Slider.Root>
-                         </label>
+<label className="flex flex-col"><span className="mb-1">{settings.layout === 'horizontal' ? '每行标签数' : '每列标签数'} ({settings.tagLayout.tagsPerRow}个)</span>
+                            <Slider.Root className="relative flex items-center select-none touch-none w-full h-4" value={[settings.tagLayout.tagsPerRow]} max={20} min={1} step={1} onValueChange={(v) => handleStyleChange('tagsPerRow', v[0])}>
+                               <Slider.Track className="bg-gray-200 relative grow rounded-full h-[2px]"><Slider.Range className="absolute bg-blue-500 rounded-full h-full" /></Slider.Track>
+                               <Slider.Thumb className="block w-3 h-3 bg-white shadow border border-gray-300 rounded-full outline-none" />
+                            </Slider.Root>
+                          </label>
                        </div>
                     </Popover.Content>
                   </Popover.Portal>
@@ -137,7 +137,7 @@ export function MainContent() {
 }
 
 function HorizontalLayout() {
-   const { tags, categories, selectedCategoryId, settings, isEditMode } = useStore();
+   const { tags, categories, selectedCategoryId, settings, isEditMode, setEditingTag } = useStore();
    const t = useTranslation(settings.language);
    
    const renderCat = (catId: string, depth: number) => {
@@ -192,9 +192,9 @@ function HorizontalLayout() {
                  gridTemplateColumns: `repeat(${settings.tagLayout.tagsPerRow || 5}, max-content)`
                }}
              >
-                {myTags.map((tag, i) => (
-                   <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={i} colorBlock="blue-500" />
-                ))}
+{myTags.map((tag, i) => (
+                    <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={i} colorBlock="blue-500" onEdit={setEditingTag} />
+                 ))}
                 {provided.placeholder}
              </div>
            )}
@@ -231,78 +231,105 @@ function HorizontalLayout() {
 }
 
 function VerticalLayout() {
-   const { tags, categories, selectedCategoryId, settings, isEditMode } = useStore();
+   const { tags, categories, selectedCategoryId, settings, isEditMode, setEditingTag } = useStore();
    const t = useTranslation(settings.language);
    const rootLevelCats = categories.filter(c => c.parent_id === selectedCategoryId).sort((a,b) => a.position_order - b.position_order);
    const rootTags = tags.filter(t => t.category_id === selectedCategoryId).sort((a,b) => a.position_order - b.position_order);
+   const selectedCat = categories.find(c => c.id === selectedCategoryId);
 
-   const renderSubVert = (catId: string) => {
-      const subCats = categories.filter(c => c.parent_id === catId).sort((a,b) => a.position_order - b.position_order);
-      const myTags = tags.filter(t => t.category_id === catId).sort((a,b) => a.position_order - b.position_order);
-      const catInfo = categories.find(c => c.id === catId);
-      
-      if (!isEditMode && myTags.length === 0 && subCats.length === 0) return null;
+const renderSubVert = (catId: string) => {
+       const subCats = categories.filter(c => c.parent_id === catId).sort((a,b) => a.position_order - b.position_order);
+       const myTags = tags.filter(t => t.category_id === catId).sort((a,b) => a.position_order - b.position_order);
+       const catInfo = categories.find(c => c.id === catId);
+       
+       if (!isEditMode && myTags.length === 0 && subCats.length === 0) return null;
 
-      return (
-        <div key={catId} className="flex flex-col mb-4">
-           {catInfo && (
-              <div className="flex items-center gap-2 mb-2 ml-1 group">
-                 <div className="w-1 h-2.5 bg-green-400 opacity-60 rounded-sm"></div>
-                 <div className="text-[11px] font-semibold text-gray-500">{catInfo.name}</div>
-                 {isEditMode && (
-                    <button 
-                      className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-blue-600 rounded bg-gray-100 hover:bg-blue-50 transition" 
-                      title="在此分类下添加标签"
-                      onClick={() => {
-                          useStore.getState().openPrompt(
-                            '在此分类下添加标签',
-                            [
-                              { name: 'title', label: '标签名称', placeholder: '请输入标签名称' },
-                              { name: 'url', label: '标签URL', defaultValue: 'https://' }
-                            ],
-                            (values) => {
-                              if (values.title && values.url) {
-                                  const id = 'tag_' + Date.now();
-                                  const newTag = { id, category_id: catId, title: values.title, url: values.url, description: '', icon_url:'', position_order: 0 };
-                                  useStore.getState().setTags([...useStore.getState().tags, newTag]);
-                                  import('../lib/api').then(({api}) => api.post('/api/tags', newTag));
-                              }
-                            }
-                          );
-                      }}
-                    >
-                      <Plus size={10} />
-                    </button>
-                 )}
+       const tagsPerRow = settings.tagLayout.tagsPerRow || 5;
+       const tagChunks: Tag[][] = [];
+       for (let i = 0; i < myTags.length; i += tagsPerRow) {
+         tagChunks.push(myTags.slice(i, i + tagsPerRow));
+       }
+
+       return (
+         <div key={catId} className="flex flex-col mb-4">
+            {catInfo && (
+               <div className="flex items-center gap-2 mb-2 ml-1 group">
+                  <div className="w-1 h-2.5 bg-green-400 opacity-60 rounded-sm"></div>
+                  <div className="text-[11px] font-semibold text-gray-500">{catInfo.name}</div>
+                  {isEditMode && (
+                     <button 
+                       className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-blue-600 rounded bg-gray-100 hover:bg-blue-50 transition" 
+                       title="在此分类下添加标签"
+                       onClick={() => {
+                           useStore.getState().openPrompt(
+                             '在此分类下添加标签',
+                             [
+                               { name: 'title', label: '标签名称', placeholder: '请输入标签名称' },
+                               { name: 'url', label: '标签URL', defaultValue: 'https://' }
+                             ],
+                             (values) => {
+                               if (values.title && values.url) {
+                                   const id = 'tag_' + Date.now();
+                                   const newTag = { id, category_id: catId, title: values.title, url: values.url, description: '', icon_url:'', position_order: 0 };
+                                   useStore.getState().setTags([...useStore.getState().tags, newTag]);
+                                   import('../lib/api').then(({api}) => api.post('/api/tags', newTag));
+                               }
+                             }
+                           );
+                       }}
+                     >
+                       <Plus size={10} />
+                     </button>
+                  )}
+               </div>
+            )}
+            {tagChunks.length > 0 ? (
+              <div className="flex gap-4 flex-wrap">
+                {tagChunks.map((chunk, chunkIndex) => (
+                  <Droppable key={`${catId}-chunk-${chunkIndex}`} droppableId={`drop-tag-vert-${catId}-${chunkIndex}`} type="TAG" isDropDisabled={!isEditMode}>
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className={`grid ${isEditMode && chunk.length === 0 ? 'min-h-[40px]' : ''}`}
+                        style={{ 
+                          gap: `${settings.tagLayout.spacingY}px ${settings.tagLayout.spacingX}px`,
+                          gridTemplateColumns: `repeat(${tagsPerRow}, max-content)`
+                        }}>
+                        {chunk.map((tag, i) => <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={chunkIndex * tagsPerRow + i} colorBlock="green-500" onEdit={setEditingTag} />)}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                ))}
               </div>
-           )}
-           <Droppable droppableId={`drop-tag-vert-${catId}`} type="TAG" isDropDisabled={!isEditMode}>
-             {(provided) => (
-               <div ref={provided.innerRef} {...provided.droppableProps} className={`grid ${myTags.length > 0 ? 'mb-2' : ''} ${isEditMode && myTags.length === 0 ? 'min-h-[40px] mb-2' : ''}`}
-                 style={{ 
-                   gap: `${settings.tagLayout.spacingY}px ${settings.tagLayout.spacingX}px`,
-                   gridTemplateColumns: `repeat(${settings.tagLayout.tagsPerRow || 5}, max-content)`
-                 }}>
-                 {myTags.map((tag, i) => <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={i} colorBlock="green-500" />)}
-                 {provided.placeholder}
-               </div>
-             )}
-           </Droppable>
-           
-           {isEditMode && myTags.length === 0 && subCats.length === 0 && (
-               <div className="text-[10px] text-gray-400 italic mb-2 bg-gray-50 border border-dashed border-gray-200 p-2 rounded text-center mx-1">
-                  空分类
-               </div>
-           )}
+            ) : (
+              isEditMode && (
+                <Droppable droppableId={`drop-tag-vert-${catId}-0`} type="TAG" isDropDisabled={!isEditMode}>
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-[40px] mb-2"
+                      style={{ 
+                        gap: `${settings.tagLayout.spacingY}px ${settings.tagLayout.spacingX}px`,
+                        gridTemplateColumns: `repeat(${tagsPerRow}, max-content)`
+                      }}>
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              )
+            )}
+            
+            {isEditMode && myTags.length === 0 && subCats.length === 0 && (
+                <div className="text-[10px] text-gray-400 italic mb-2 bg-gray-50 border border-dashed border-gray-200 p-2 rounded text-center mx-1">
+                   空分类
+                </div>
+            )}
 
-           {subCats.length > 0 && (
-             <div className="pl-3 border-l border-gray-100 ml-1.5 pt-1">
-               {subCats.map(sc => renderSubVert(sc.id))}
-             </div>
-           )}
-        </div>
-      );
-   };
+            {subCats.length > 0 && (
+              <div className="pl-3 border-l border-gray-100 ml-1.5 pt-1">
+                {subCats.map(sc => renderSubVert(sc.id))}
+              </div>
+            )}
+         </div>
+       );
+    };
 
    // For vertical layout, if selected category has NO children at all, show a placeholder
    const isEmptyRoot = rootTags.length === 0 && rootLevelCats.length === 0;
@@ -320,25 +347,38 @@ function VerticalLayout() {
               {t('emptyCatDesc')}
            </div>
        )}
-       {/* 1st Column: the root tags directly under the selected cat */}
-       {rootTags.length > 0 && (
-          <div className="flex flex-col min-w-[260px] shrink-0 border-r border-gray-200 pr-5" style={{ minWidth: settings.tagLayout.width ? Math.max(260, (settings.tagLayout.width + settings.tagLayout.spacingX) * settings.tagLayout.tagsPerRow) : 260 }}>
-             <div className="flex items-center gap-2 mb-3">
-               <div className="w-1 h-4 bg-gray-400 rounded-sm"></div>
-               <h2 className="text-sm font-bold text-gray-700">{t('rootLevel')}</h2>
-             </div>
-             <Droppable droppableId={`drop-tag-vert-root-col`} type="TAG" isDropDisabled={!isEditMode}>
-               {(provided) => (
-                 <div ref={provided.innerRef} {...provided.droppableProps} className="grid gap-2 min-h-[100px]"
-                   style={{ 
-                     gap: `${settings.tagLayout.spacingY}px ${settings.tagLayout.spacingX}px`,
-                     gridTemplateColumns: `repeat(${settings.tagLayout.tagsPerRow || 5}, max-content)`
-                   }}>
-                    {rootTags.map((tag, i) => <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={i} colorBlock="gray-500" />)}
-                    {provided.placeholder}
-                 </div>
-               )}
-             </Droppable>
+{/* 1st Column: the root tags directly under the selected cat */}
+        {rootTags.length > 0 && (
+           <div className="flex flex-col min-w-[260px] shrink-0 border-r border-gray-200 pr-5" style={{ minWidth: settings.tagLayout.width ? Math.max(260, (settings.tagLayout.width + settings.tagLayout.spacingX) * settings.tagLayout.tagsPerRow) : 260 }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-1 h-4 bg-gray-400 rounded-sm"></div>
+                <h2 className="text-sm font-bold text-gray-700">{selectedCat ? selectedCat.name : t('rootLevel')}</h2>
+              </div>
+              {(() => {
+                const tagsPerRow = settings.tagLayout.tagsPerRow || 5;
+                const rootTagChunks: Tag[][] = [];
+                for (let i = 0; i < rootTags.length; i += tagsPerRow) {
+                  rootTagChunks.push(rootTags.slice(i, i + tagsPerRow));
+                }
+                return (
+                  <div className="flex gap-4 flex-wrap">
+                    {rootTagChunks.map((chunk, chunkIndex) => (
+                      <Droppable key={`root-chunk-${chunkIndex}`} droppableId={`drop-tag-vert-root-col-${chunkIndex}`} type="TAG" isDropDisabled={!isEditMode}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.droppableProps} className="grid gap-2 min-h-[100px]"
+                            style={{ 
+                              gap: `${settings.tagLayout.spacingY}px ${settings.tagLayout.spacingX}px`,
+                              gridTemplateColumns: `repeat(${tagsPerRow}, max-content)`
+                            }}>
+                             {chunk.map((tag, i) => <TagCard key={tag.id} tag={tag} isEditMode={isEditMode} layout={settings.tagLayout} index={chunkIndex * tagsPerRow + i} colorBlock="gray-500" onEdit={setEditingTag} />)}
+                             {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    ))}
+                  </div>
+                );
+              })()}
           </div>
        )}
        {/* Other Columns: First level child categories */}
@@ -380,10 +420,9 @@ function VerticalLayout() {
    );
 }
 
-function TagCard({ tag, isEditMode, layout, index, colorBlock }: any) {
-  // Extract custom color logic or keep default
+function TagCard({ tag, isEditMode, layout, index, colorBlock, onEdit }: { tag: Tag; isEditMode: boolean; layout: any; index: number; colorBlock: string; onEdit?: (tag: Tag) => void }) {
   const cardBorderL = layout.borderThickness === 1 ? undefined : layout.borderThickness;
-  
+   
   return (
     <Draggable draggableId={`tag-${tag.id}`} index={index} isDragDisabled={!isEditMode}>
       {(provided) => (
@@ -399,6 +438,7 @@ function TagCard({ tag, isEditMode, layout, index, colorBlock }: any) {
           )}
           style={{ borderWidth: cardBorderL, width: layout.width, minHeight: layout.height }}
           onClick={() => { if(!isEditMode && tag.url) window.open(tag.url.startsWith('http') ? tag.url : `https://${tag.url}`, '_blank') }}
+          onDoubleClick={(e) => { e.stopPropagation(); if(isEditMode && onEdit) onEdit(tag); }}
         >
           <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded" style={{ color: layout.iconColor, fontSize: layout.iconSize }}>
             {tag.icon_url ? <img src={tag.icon_url} className="w-5 h-5" /> : <Globe size={layout.iconSize || 16} />}

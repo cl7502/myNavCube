@@ -6,36 +6,11 @@ import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTranslation } from '../i18n';
 
 export function Sidebar() {
-  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, isEditMode, settings } = useStore();
+  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, isEditMode, settings, openAddCategory } = useStore();
   const [width, setWidth] = useState(250);
   const isDraggingRef = useRef(false);
-  const [promptData, setPromptData] = useState<{isOpen: boolean, action: string, title: string, defaultName: string, parentId?: string, catId?: string}>({isOpen: false, action: '', title: '', defaultName: ''});
-  
+   
   const t = useTranslation(settings.language);
-
-  const handlePromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const name = fd.get('name') as string;
-    if (!name) return;
-
-    if (promptData.action === 'addRoot') {
-      const id = 'cat_' + Date.now();
-      const newCat = { id, name, parent_id: 'root', is_expanded: true, position_order: 0, icon:'', icon_color:'', text_color:'' };
-      useStore.getState().setCategories([...categories, newCat]);
-      import('../lib/api').then(({api}) => api.post('/api/categories', newCat));
-    } else if (promptData.action === 'addChild') {
-      const id = 'cat_' + Date.now();
-      const newCat = { id, name, parent_id: promptData.parentId || 'root', is_expanded: true, position_order: 0, icon:'', icon_color:'', text_color:'' };
-      useStore.getState().setCategories([...categories, newCat]);
-      import('../lib/api').then(({api}) => api.post('/api/categories', newCat));
-    } else if (promptData.action === 'rename') {
-      const newCats = categories.map(c => c.id === promptData.catId ? { ...c, name } : c);
-      useStore.getState().setCategories(newCats);
-      import('../lib/api').then(({api}) => api.put(`/api/categories/${promptData.catId}`, newCats.find(c => c.id === promptData.catId)!));
-    }
-    setPromptData({ isOpen: false, action: '', title: '', defaultName: '' });
-  };
 
   const startDrag = (e: React.MouseEvent) => {
     isDraggingRef.current = true;
@@ -112,28 +87,17 @@ export function Sidebar() {
                      {t('allCategories')}
                    </div>
                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
-                           onClick={(e) => {
-                             e.stopPropagation();
-                             e.preventDefault();
-                             useStore.getState().openPrompt(
-                               t('addCategory'),
-                               [{ name: 'name', label: t('categoryName'), placeholder: t('placeholderCategoryName') }],
-                               (values) => {
-                                 if(values.name) {
-                                    const id = 'cat_' + Date.now();
-                                    const newCat = { id, name: values.name, parent_id: 'root', is_expanded: true, position_order: 0, icon:'', icon_color:'', text_color:'' };
-                                    useStore.getState().setCategories([...categories, newCat]);
-                                    import('../lib/api').then(({api}) => api.post('/api/categories', newCat));
-                                 }
-                               }
-                             );
-                           }}
-                           onMouseDown={e => e.stopPropagation()}
-                           onTouchStart={e => e.stopPropagation()}
-                        >
-                          <Plus size={12} />
-                       </button>
+<button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              openAddCategory('root');
+                            }}
+                            onMouseDown={e => e.stopPropagation()}
+                            onTouchStart={e => e.stopPropagation()}
+                         >
+                           <Plus size={12} />
+                        </button>
                      </div>
                 </div>
               )}
@@ -186,13 +150,9 @@ function CategoryItem({ category, index, allCats, renderTree }: any) {
                  {...dropProvided.droppableProps}
                  className={`flex items-center justify-between group p-1 pl-2 rounded-sm cursor-pointer border border-transparent transition-all ${selectedCategoryId === category.id ? 'bg-blue-50 text-blue-700 font-medium' : 'hover:bg-gray-50 text-gray-600'} ${dropSnapshot.isDraggingOver ? 'bg-green-50 border-green-400 border-dashed' : ''}`}
                  onClick={() => setSelectedCategory(category.id)}
-                 onDoubleClick={() => {
-                     if(isEditMode) {
-                         useStore.getState().setEditingCategory(category);
-                     } else {
-                         useStore.getState().openPrompt('提示', [{ name: 'msg', label: '请先开启编辑模式 (从页面顶栏)', defaultValue: '确认' }], () => {});
-                     }
-                 }}
+onDoubleClick={() => {
+                      useStore.getState().setEditingCategory(category);
+                  }}
               >
                  <div className="flex items-center gap-1.5 flex-1 min-w-0" {...provided.dragHandleProps} >
                    <div className="p-0.5 hover:bg-gray-200 rounded shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
@@ -213,28 +173,17 @@ function CategoryItem({ category, index, allCats, renderTree }: any) {
                  </div>
                  
                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           e.preventDefault();
-                           useStore.getState().openPrompt(
-                             t('addSubCategory'),
-                             [{ name: 'name', label: t('categoryName'), placeholder: t('placeholderCategoryName') }],
-                             (values) => {
-                               if(values.name) {
-                                  const id = 'cat_' + Date.now();
-                                  const newCat = { id, name: values.name, parent_id: category.id, is_expanded: true, position_order: 0, icon:'', icon_color:'', text_color:'' };
-                                  useStore.getState().setCategories([...allCats, newCat]);
-                                  import('../lib/api').then(({api}) => api.post('/api/categories', newCat));
-                               }
-                             }
-                           );
-                         }}
-                         onMouseDown={e => e.stopPropagation()}
-                         onTouchStart={e => e.stopPropagation()}
-                      >
-                        <Plus size={12} />
-                     </button>
+<button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            useStore.getState().openAddCategory(category.id);
+                          }}
+                          onMouseDown={e => e.stopPropagation()}
+                          onTouchStart={e => e.stopPropagation()}
+                       >
+                         <Plus size={12} />
+                      </button>
                    </div>
                    {dropProvided.placeholder && <div className="hidden" style={{display:'none'}}>{dropProvided.placeholder}</div>}
               </div>

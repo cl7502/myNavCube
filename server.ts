@@ -6,7 +6,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
-const PORT = 3000;
+const PORT = 13005;
 const SECRET_KEY = 'supersecret_jwt_key_should_be_in_env_but_fine_for_now';
 
 app.use(express.json());

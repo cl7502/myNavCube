@@ -7,6 +7,7 @@ import { Sidebar } from './components/Sidebar';
 import { MainContent } from './components/MainContent';
 import { GlobalPromptModal } from './components/GlobalPromptModal';
 import { CategoryModal } from './components/CategoryModal';
+import { TagModal } from './components/TagModal';
 import { DragDropContext } from '@hello-pangea/dnd';
 
 export default function App() {
@@ -105,7 +106,7 @@ export default function App() {
 
   if (!user) return <Login />;
 
-  return (
+return (
     <div className="flex flex-col h-screen w-full font-sans text-gray-900 bg-[#F4F5F7] overflow-hidden">
       <TopBar />
       <DragDropContext onDragEnd={onDragEnd}>
@@ -116,6 +117,7 @@ export default function App() {
       </DragDropContext>
       <GlobalPromptModal />
       <CategoryModal />
+      <TagModal />
     </div>
   );
 }

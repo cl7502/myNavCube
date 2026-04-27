@@ -68,7 +68,9 @@ interface AppState {
   isSidebarExpanded: boolean;
   promptState: PromptState | null;
   editingCategory: Category | null;
-  
+  editingTag: Tag | null;
+  addingCategory: { parentId: string | null; name: string } | null;
+   
   setUser: (user: User | null) => void;
   setSettings: (settings: Partial<UserSettings>) => void;
   setCategories: (categories: Category[]) => void;
@@ -79,6 +81,9 @@ interface AppState {
   openPrompt: (title: string, fields: PromptState['fields'], onSubmit: (values: Record<string, string>) => void) => void;
   closePrompt: () => void;
   setEditingCategory: (cat: Category | null) => void;
+  setEditingTag: (tag: Tag | null) => void;
+  openAddCategory: (parentId: string | null, name?: string) => void;
+  closeAddCategory: () => void;
 }
 
 const defaultSettings: UserSettings = {
@@ -114,7 +119,9 @@ export const useStore = create<AppState>((set) => ({
   isSidebarExpanded: true,
   promptState: null,
   editingCategory: null,
-  
+  editingTag: null,
+  addingCategory: null,
+   
   setUser: (user) => set({ user }),
   setSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
   setCategories: (categories) => set({ categories }),
@@ -124,5 +131,8 @@ export const useStore = create<AppState>((set) => ({
   setSidebarExpanded: (isSidebarExpanded) => set({ isSidebarExpanded }),
   openPrompt: (title, fields, onSubmit) => set({ promptState: { isOpen: true, title, fields, onSubmit } }),
   closePrompt: () => set({ promptState: null }),
-  setEditingCategory: (editingCategory) => set({ editingCategory })
+  setEditingCategory: (editingCategory) => set({ editingCategory }),
+  setEditingTag: (editingTag) => set({ editingTag }),
+  openAddCategory: (parentId, name = '') => set({ addingCategory: { parentId, name } }),
+  closeAddCategory: () => set({ addingCategory: null })
 }));
