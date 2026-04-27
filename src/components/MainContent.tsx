@@ -10,7 +10,9 @@ import { motion, AnimatePresence } from 'motion/react';
 
 function renderTagIcon(tag: Tag, size: number) {
   const icon = tag.icon_url;
-  if (!icon) return <Globe size={size} />;
+  const iconColor = tag.icon_color || '#6b7280';
+  
+  if (!icon) return <Globe size={size} color={iconColor} />;
   
   if (icon.startsWith('http') || icon.startsWith('data:image')) {
     return <img src={icon} alt="" className="w-full h-full object-contain" />;
@@ -30,10 +32,10 @@ function renderTagIcon(tag: Tag, size: number) {
   }
   if (icon.includes(':')) {
     const [prefix, name] = icon.split(':');
-    return <img src={`https://api.iconify.design/${prefix}/${name}.svg?width=${size * 4}&height=${size * 4}`} alt="" className="w-full h-full" />;
+    return <img src={`https://api.iconify.design/${prefix}/${name}.svg?width=${size * 4}&height=${size * 4}&color=${encodeURIComponent(iconColor)}`} alt="" className="w-full h-full" />;
   }
   const IconComp = (Icons as any)[icon];
-  return IconComp ? <IconComp size={size} /> : <Globe size={size} />;
+  return IconComp ? <IconComp size={size} color={iconColor} /> : <Globe size={size} color={iconColor} />;
 }
 
 export function MainContent() {
@@ -273,11 +275,7 @@ function HorizontalLayout() {
            )}
          </Droppable>
          
-         {isEditMode && myTags.length === 0 && subCats.length === 0 && (
-            <div className="text-xs text-gray-400 italic mb-4 bg-gray-50 border border-dashed border-gray-200 p-3 rounded-lg text-center">
-               {t('emptyCatDesc')}
-            </div>
-         )}
+
          
          <div className={depth > 0 ? "border-l border-gray-100 pl-2" : ""}>
             {subCats.map(sc => renderCat(sc.id, depth + 1))}
@@ -310,24 +308,30 @@ function VerticalLayout() {
    const rootTags = tags.filter(t => t.category_id === selectedCategoryId).sort((a,b) => a.position_order - b.position_order);
    const selectedCat = categories.find(c => c.id === selectedCategoryId);
 
-const renderSubVert = (catId: string) => {
+const renderSubVert = (catId: string, showHeader: boolean = true) => {
        const subCats = categories.filter(c => c.parent_id === catId).sort((a,b) => a.position_order - b.position_order);
        const myTags = tags.filter(t => t.category_id === catId).sort((a,b) => a.position_order - b.position_order);
        const catInfo = categories.find(c => c.id === catId);
        
        if (!isEditMode && myTags.length === 0 && subCats.length === 0) return null;
+       
+       const hasContent = myTags.length > 0 || subCats.some(sc => {
+         const scTags = tags.filter(t => t.category_id === sc.id);
+         return scTags.length > 0;
+       });
+       if (!hasContent && !isEditMode) return null;
 
-const tagsPerColumn = settings.tagLayout.tagsPerColumn || 0;
-        const tagChunks: Tag[][] = [];
-        const effectiveTagsPerColumn = tagsPerColumn || myTags.length;
-        for (let i = 0; i < myTags.length; i += effectiveTagsPerColumn) {
-          tagChunks.push(myTags.slice(i, i + effectiveTagsPerColumn));
-        }
+       const tagsPerColumn = settings.tagLayout.tagsPerColumn || 0;
+       const tagChunks: Tag[][] = [];
+       const effectiveTagsPerColumn = tagsPerColumn || myTags.length;
+       for (let i = 0; i < myTags.length; i += effectiveTagsPerColumn) {
+         tagChunks.push(myTags.slice(i, i + effectiveTagsPerColumn));
+       }
 
-        return (
-          <div key={catId} className="flex flex-col mb-4">
-             {catInfo && (
-<div className="flex items-center gap-2 mb-2 ml-1 group">
+return (
+          <div key={catId} className={`flex flex-col ${myTags.length > 0 ? 'mb-3' : 'mb-1'}`}>
+               {showHeader && catInfo && (
+                 <div className={`flex items-center gap-2 ${myTags.length > 0 ? 'mb-2' : 'mb-0.5'} ml-1 group`}>
                    <div className="w-1 h-2.5 rounded-sm" style={{ backgroundColor: catInfo.icon_color || '#3b82f6' }}></div>
                    <div className="text-[11px] font-semibold text-gray-500">{catInfo.name}</div>
 {isEditMode && (
@@ -376,14 +380,10 @@ gridTemplateColumns: `repeat(${effectiveTagsPerColumn}, max-content)`
               )
             )}
             
-            {isEditMode && myTags.length === 0 && subCats.length === 0 && (
-                <div className="text-[10px] text-gray-400 italic mb-2 bg-gray-50 border border-dashed border-gray-200 p-2 rounded text-center mx-1">
-                   空分类
-                </div>
-            )}
 
-            {subCats.length > 0 && (
-              <div className="pl-3 border-l border-gray-100 ml-1.5 pt-1">
+
+{subCats.length > 0 && (
+              <div className={`pl-3 border-l border-gray-100 ml-1.5 ${myTags.length > 0 ? 'pt-1' : 'pt-0.5'}`}>
                 {subCats.map(sc => renderSubVert(sc.id))}
               </div>
             )}
@@ -445,7 +445,7 @@ gridTemplateColumns: `repeat(${effectiveTagsPerColumn}, max-content)`
         {/* Other Columns: First level child categories */}
         {rootLevelCats.map(c => (
            <div key={c.id} className="flex flex-col min-w-[260px] shrink-0 border-r border-gray-200 pr-5" style={{ minWidth: settings.tagLayout.width ? Math.max(260, (settings.tagLayout.width + settings.tagLayout.spacingX) * (settings.tagLayout.tagsPerColumn || 5)) : 260 }}>
-<div className="flex items-center gap-2 mb-4 group">
+<div className={`flex items-center gap-2 ${isEditMode || tags.some(t => t.category_id === c.id) ? 'mb-3' : 'mb-1'} group`}>
                  <div className="w-1 h-4 rounded-sm" style={{ backgroundColor: c.icon_color || '#3b82f6' }}></div>
                  <h2 className="text-sm font-bold text-gray-800">{c.name}</h2>
 {isEditMode && (
@@ -460,7 +460,7 @@ gridTemplateColumns: `repeat(${effectiveTagsPerColumn}, max-content)`
                     </button>
                  )}
              </div>
-             {renderSubVert(c.id)}
+             {renderSubVert(c.id, false)}
           </div>
        ))}
      </div>

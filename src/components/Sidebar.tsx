@@ -219,7 +219,6 @@ onDoubleClick={() => {
                   }}
               >
 <div className="flex items-center gap-1.5 flex-1 min-w-0" {...provided.dragHandleProps} >
-                    <div className="w-1.5 h-3 rounded-sm shrink-0" style={{ backgroundColor: category.icon_color || '#3b82f6' }}></div>
                     <div className="p-0.5 hover:bg-gray-200 rounded shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
                       {buildHasChildren(allCats, category.id) ? (
                         <ChevronRight size={12} className={expanded ? 'rotate-90 transition-transform' : 'transition-transform'} />

@@ -6,6 +6,12 @@ import * as Icons from 'lucide-react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { api } from '../lib/api';
 
+const presetColors = [
+  '#374151', '#6b7280', '#9ca3af', '#1f2937', '#111827',
+  '#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e',
+  '#000000', '#ffffff', '#fef2f2', '#fef3c7', '#ecfccb', '#ccfbf1', '#cffafe', '#e0f2fe', '#dbeafe', '#e0e7ff', '#eef2ff', '#fae8ff', '#ffe4e6'
+];
+
 const commonIcons = [
   'Globe', 'Star', 'Heart', 'Zap', 'Book', 'Briefcase', 'Coffee', 'Code', 'Cpu', 'Database', 
   'FileText', 'Folder', 'Home', 'Image', 'Link', 'Map', 'MessageSquare', 'Music', 'Paperclip', 
@@ -184,8 +190,8 @@ function TagIconLibrarySelector({ prefix, iconSet, onSelect, currentIcon, search
   );
 }
 
-function renderIconPreview(icon: string) {
-  if (!icon) return <Globe size={20} className="text-gray-400" />;
+function renderIconPreview(icon: string, color: string = '#6b7280') {
+  if (!icon) return <Globe size={20} color={color} />;
   
   if (icon.startsWith('http') || icon.startsWith('data:image')) {
     return <img src={icon} alt="preview" className="w-5 h-5" />;
@@ -205,10 +211,10 @@ function renderIconPreview(icon: string) {
   }
   if (icon.includes(':')) {
     const [prefix, name] = icon.split(':');
-    return <img src={`https://api.iconify.design/${prefix}/${name}.svg?width=20&height=20`} alt="preview" className="w-5 h-5" />;
+    return <img src={`https://api.iconify.design/${prefix}/${name}.svg?width=20&height=20&color=${encodeURIComponent(color)}`} alt="preview" className="w-5 h-5" />;
   }
   const IconComp = (Icons as any)[icon];
-  return IconComp ? <IconComp size={18} /> : <Globe size={20} className="text-gray-400" />;
+  return IconComp ? <IconComp size={18} color={color} /> : <Globe size={20} color={color} />;
 }
 
 export function TagModal() {
@@ -443,7 +449,7 @@ const onSave = async () => {
                 图标
                 {iconUrl && (
                   <span className="ml-2 font-normal text-gray-500">
-                    (预览: <span className="inline-flex items-center">{renderIconPreview(iconUrl)}</span>)
+                    (预览: <span className="inline-flex items-center">{renderIconPreview(iconUrl, iconColor)}</span>)
                   </span>
                 )}
               </label>
@@ -513,19 +519,41 @@ const onSave = async () => {
                   </Tabs.Content>
                 </div>
               </Tabs.Root>
-              <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">图标颜色</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={iconColor} onChange={e => setIconColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                    <input type="text" value={iconColor} onChange={e => setIconColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                  <label className="block text-xs font-medium text-gray-700 mb-1">图标颜色</label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input type="color" value={iconColor} onChange={e => setIconColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer" />
+                    <input type="text" value={iconColor} onChange={e => setIconColor(e.target.value)} className="flex-1 w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none" />
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {presetColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setIconColor(color)}
+                        className={`w-4 h-4 rounded border ${iconColor === color ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">文字颜色</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                    <input type="text" value={textColor} onChange={e => setTextColor(e.target.value)} className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded" />
+                  <label className="block text-xs font-medium text-gray-700 mb-1">文字颜色</label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer" />
+                    <input type="text" value={textColor} onChange={e => setTextColor(e.target.value)} className="flex-1 w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none" />
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {presetColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setTextColor(color)}
+                        className={`w-4 h-4 rounded border ${textColor === color ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
