@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useStore } from '../store';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import { api } from '../lib/api';
 import * as Tabs from '@radix-ui/react-tabs';
 
@@ -149,7 +149,7 @@ export function UserModal({ open, onOpenChange }: { open: boolean, onOpenChange:
     return null;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();

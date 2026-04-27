@@ -35,12 +35,13 @@ export function TopBar() {
 
       <div className="flex items-center gap-4">
         {/* Languages, Themes, Layouts */}
-        <select 
+<select 
           className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
           value={settings.language}
           onChange={(e) => {
+             const newSettings = { ...settings, language: e.target.value };
              setSettings({ language: e.target.value });
-             import('../lib/api').then(({api}) => api.put('/api/user/info', { settings: { ...settings, language: e.target.value } }).catch(()=>null));
+             import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: e.target.value, data: newSettings }).catch(()=>null));
           }}
         >
           <option value="zh">中文 (简体)</option>
@@ -51,8 +52,9 @@ export function TopBar() {
           className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
           value={settings.theme}
           onChange={(e) => {
+             const newSettings = { ...settings, theme: e.target.value };
              setSettings({ theme: e.target.value });
-             import('../lib/api').then(({api}) => api.put('/api/user/info', { settings: { ...settings, theme: e.target.value } }).catch(()=>null));
+             import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
           }}
         >
           <option value="default">{t('themeDefault')}</option>
@@ -64,8 +66,9 @@ export function TopBar() {
           className="text-xs border border-gray-200 bg-transparent py-1 px-2 rounded hover:bg-gray-50 outline-none cursor-pointer"
           value={settings.layout}
           onChange={(e) => {
+             const newSettings = { ...settings, layout: e.target.value as any };
              setSettings({ layout: e.target.value as any });
-             import('../lib/api').then(({api}) => api.put('/api/user/info', { settings: { ...settings, layout: e.target.value as any } }).catch(()=>null));
+             import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
           }}
         >
           <option value="vertical">{t('layoutVertical')}</option>
@@ -77,7 +80,15 @@ export function TopBar() {
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold outline-none border border-transparent hover:border-blue-300 shadow-sm transition overflow-hidden">
-                {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <span>{user?.name?.[0]?.toUpperCase() || <UserIcon size={14}/>}</span>}
+                {user?.avatar ? (
+                user.avatar.startsWith('dicebear:') ? 
+                  <img src={`https://api.dicebear.com/9.x/${user.avatar.split(':')[1]}/svg?seed=${user.avatar.split(':')[2]}`} className="w-full h-full object-cover" /> :
+                user.avatar.startsWith('openpeeps:') ?
+                  <img src={`https://api.dicebear.com/9.x/open-peeps/svg?seed=${user.avatar.split(':')[1]}`} className="w-full h-full object-cover" /> :
+                user.avatar.startsWith('avataaars:') ?
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatar.split(':')[1]}`} className="w-full h-full object-cover" /> :
+                  <img src={user.avatar} className="w-full h-full object-cover" />
+              ) : <span>{user?.name?.[0]?.toUpperCase() || <UserIcon size={14}/>}</span>}
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>

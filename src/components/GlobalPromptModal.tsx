@@ -1,11 +1,12 @@
 import { useStore } from '../store';
+import type { FormEvent } from 'react';
 
 export function GlobalPromptModal() {
   const { promptState, closePrompt } = useStore();
 
   if (!promptState || !promptState.isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const values: Record<string, string> = {};

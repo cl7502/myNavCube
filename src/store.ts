@@ -11,13 +11,15 @@ export interface UserSettings {
   language: string;
   theme: string;
   layout: 'horizontal' | 'vertical';
-  tagLayout: {
+  sidebarWidth: number;
+  sidebarScale: number;
+ tagLayout: {
     width: number;
     height: number;
     borderThickness: number;
+    borderColor: string;
     textSize: number;
     iconSize: number;
-    iconColor: string;
     descSize: number;
     descFont: string;
     descColor: string;
@@ -27,6 +29,7 @@ export interface UserSettings {
     spacingX: number;
     spacingY: number;
     tagsPerRow: number;
+    tagsPerColumn: number;
   };
 }
 
@@ -46,9 +49,15 @@ export interface Tag {
   category_id: string;
   title: string;
   url: string;
+  url_external: string;
   description: string;
   icon_url: string;
+  icon_color: string;
+  text_color: string;
   position_order: number;
+  show_description: boolean;
+  show_url: boolean;
+  show_url_external: boolean;
 }
 
 export interface PromptState {
@@ -80,23 +89,28 @@ interface AppState {
   setSidebarExpanded: (expanded: boolean) => void;
   openPrompt: (title: string, fields: PromptState['fields'], onSubmit: (values: Record<string, string>) => void) => void;
   closePrompt: () => void;
-  setEditingCategory: (cat: Category | null) => void;
+setEditingCategory: (cat: Category | null) => void;
   setEditingTag: (tag: Tag | null) => void;
   openAddCategory: (parentId: string | null, name?: string) => void;
   closeAddCategory: () => void;
+  addingTag: { categoryId: string } | null;
+  openAddTag: (categoryId: string) => void;
+  closeAddTag: () => void;
 }
 
 const defaultSettings: UserSettings = {
   language: 'zh',
   theme: 'default',
   layout: 'vertical',
-  tagLayout: {
+  sidebarWidth: 250,
+  sidebarScale: 1,
+ tagLayout: {
     width: 200,
     height: 60,
     borderThickness: 1,
+    borderColor: '#e5e7eb',
     textSize: 14,
     iconSize: 24,
-    iconColor: '#000000',
     descSize: 12,
     descFont: 'Inter',
     descColor: '#666666',
@@ -105,7 +119,8 @@ const defaultSettings: UserSettings = {
     urlColor: '#999999',
     spacingX: 10,
     spacingY: 10,
-    tagsPerRow: 5
+    tagsPerRow: 0,
+    tagsPerColumn: 0
   }
 };
 
@@ -114,7 +129,7 @@ export const useStore = create<AppState>((set) => ({
   settings: defaultSettings,
   categories: [],
   tags: [],
-  isEditMode: false,
+  isEditMode: true,
   selectedCategoryId: 'root',
   isSidebarExpanded: true,
   promptState: null,
@@ -133,6 +148,9 @@ export const useStore = create<AppState>((set) => ({
   closePrompt: () => set({ promptState: null }),
   setEditingCategory: (editingCategory) => set({ editingCategory }),
   setEditingTag: (editingTag) => set({ editingTag }),
-  openAddCategory: (parentId, name = '') => set({ addingCategory: { parentId, name } }),
-  closeAddCategory: () => set({ addingCategory: null })
+openAddCategory: (parentId, name = '') => set({ addingCategory: { parentId, name } }),
+  closeAddCategory: () => set({ addingCategory: null }),
+  addingTag: null,
+  openAddTag: (categoryId) => set({ addingTag: { categoryId } }),
+  closeAddTag: () => set({ addingTag: null })
 }));

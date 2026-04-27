@@ -1,18 +1,47 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { useStore, Category } from '../store';
-import { ChevronRight, ChevronDown, Plus, MoreVertical, LayoutGrid, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, MoreVertical, LayoutGrid, PanelLeftClose, PanelLeftOpen, ZoomIn, ZoomOut } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTranslation } from '../i18n';
 
 export function Sidebar() {
-  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, isEditMode, settings, openAddCategory } = useStore();
-  const [width, setWidth] = useState(250);
+  const { categories, selectedCategoryId, setSelectedCategory, isSidebarExpanded, setSidebarExpanded, isEditMode, settings, setSettings, openAddCategory } = useStore();
+  const [width, setWidth] = useState(settings.sidebarWidth || 250);
+  const [scale, setScale] = useState(settings.sidebarScale || 1);
   const isDraggingRef = useRef(false);
-   
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+     
   const t = useTranslation(settings.language);
 
-  const startDrag = (e: React.MouseEvent) => {
+  const saveWidth = (newWidth: number) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      const newSettings = { ...settings, sidebarWidth: newWidth };
+      setSettings({ sidebarWidth: newWidth });
+      import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
+    }, 300);
+  };
+
+  const saveScale = (newScale: number) => {
+    const newSettings = { ...settings, sidebarScale: newScale };
+    setSettings({ sidebarScale: newScale });
+    import('../lib/api').then(({api}) => api.put('/api/user/settings', { language: settings.language, data: newSettings }).catch(()=>null));
+  };
+
+  const handleZoomIn = () => {
+    const newScale = Math.min(scale + 0.1, 1.5);
+    setScale(newScale);
+    saveScale(newScale);
+  };
+
+  const handleZoomOut = () => {
+    const newScale = Math.max(scale - 0.1, 0.6);
+    setScale(newScale);
+    saveScale(newScale);
+  };
+
+  const startDrag = (e: MouseEvent) => {
     isDraggingRef.current = true;
     document.body.style.cursor = 'col-resize';
   };
@@ -24,6 +53,7 @@ export function Sidebar() {
       if (newWidth < 150) newWidth = 150;
       if (newWidth > 600) newWidth = 600;
       setWidth(newWidth);
+      saveWidth(newWidth);
     };
     const onMouseUp = () => {
       isDraggingRef.current = false;
@@ -31,11 +61,23 @@ export function Sidebar() {
     };
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-    return () => {
+return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, []);
+  }, [settings]);
+
+  useEffect(() => {
+    if (settings.sidebarWidth && settings.sidebarWidth !== width) {
+      setWidth(settings.sidebarWidth);
+    }
+  }, [settings.sidebarWidth]);
+
+  useEffect(() => {
+    if (settings.sidebarScale && settings.sidebarScale !== scale) {
+      setScale(settings.sidebarScale);
+    }
+  }, [settings.sidebarScale]);
 
   const buildTree = (cats: Category[], parentId: string | null): Category[] => {
     return cats.filter(c => c.parent_id === parentId).sort((a,b) => a.position_order - b.position_order);
@@ -64,15 +106,23 @@ export function Sidebar() {
     );
   }
 
-  return (
+return (
     <aside style={{ width: `${width}px` }} className="h-full bg-white border-r border-gray-300 flex shrink-0 relative flex-col z-10">
       <div className="p-3 border-b border-gray-100 flex justify-between items-center shrink-0">
         <span className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1">分类导航</span>
-        <button onClick={() => setSidebarExpanded(false)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="收起导航栏">
-           <PanelLeftClose size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={handleZoomOut} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="缩小" disabled={scale <= 0.6}>
+            <ZoomOut size={14} />
+          </button>
+          <button onClick={handleZoomIn} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="放大" disabled={scale >= 1.5}>
+            <ZoomIn size={14} />
+          </button>
+          <button onClick={() => setSidebarExpanded(false)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors" title="收起导航栏">
+             <PanelLeftClose size={16} />
+          </button>
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-2 py-2 text-xs">
+      <div className="flex-1 overflow-y-auto px-2 py-2 text-xs" style={{ fontSize: `${scale}rem` }}>
         <Droppable droppableId="sidebar" type="TAG" isCombineEnabled={false}>
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps} className="min-h-full space-y-1">
@@ -168,13 +218,14 @@ onDoubleClick={() => {
                       useStore.getState().setEditingCategory(category);
                   }}
               >
-                 <div className="flex items-center gap-1.5 flex-1 min-w-0" {...provided.dragHandleProps} >
-                   <div className="p-0.5 hover:bg-gray-200 rounded shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
-                     {buildHasChildren(allCats, category.id) ? (
-                       <ChevronRight size={12} className={expanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
-                     ) : <span className="w-[12px]"></span>}
-                   </div>
-                   
+<div className="flex items-center gap-1.5 flex-1 min-w-0" {...provided.dragHandleProps} >
+                    <div className="w-1.5 h-3 rounded-sm shrink-0" style={{ backgroundColor: category.icon_color || '#3b82f6' }}></div>
+                    <div className="p-0.5 hover:bg-gray-200 rounded shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+                      {buildHasChildren(allCats, category.id) ? (
+                        <ChevronRight size={12} className={expanded ? 'rotate-90 transition-transform' : 'transition-transform'} />
+                      ) : <span className="w-[12px]"></span>}
+                    </div>
+                    
 {category.icon ? (
                       <div className="shrink-0 flex items-center justify-center w-4 h-4" style={{ color: category.icon_color || 'inherit' }}>
                          {isCustomSvg && <div dangerouslySetInnerHTML={{ __html: category.icon }} className="w-full h-full [&>svg]:w-full [&>svg]:h-full" />}
@@ -182,9 +233,9 @@ onDoubleClick={() => {
                          {IconComp && <IconComp size={14} />}
                       </div>
                     ) : null}
-                   
-                   <span className="truncate select-none" style={{ color: category.text_color || 'inherit' }}>{category.name}</span>
-                 </div>
+                    
+                    <span className="truncate select-none" style={{ color: category.text_color || 'inherit' }}>{category.name}</span>
+                  </div>
                  
                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
 <button type="button" className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-100" 
